@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">ClassCollab</string>
+    <string name="action_settings">Settings</string>
+    <string name="georgia_tech_logo">Georgia Tech Logo</string>
+    <string name="email_id">GT Email/ID</string>
+    <string name="password">Password</string>
+
+</resources>
