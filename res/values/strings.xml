@@ -6,5 +6,11 @@
     <string name="georgia_tech_logo">Georgia Tech Logo</string>
     <string name="email_id">GT Email/ID</string>
     <string name="password">Password</string>
-
+    <string name="your_classes">Your classes</string>
+    <string name="enable_location">Location: Disabled</string>
+    <string name="choose_status">Status: Offline</string>
+    <string name="group_chat">Group Chat</string>
+    <string name="local_service_started">Local service started</string>
+    <string name="local_service_stopped">Local service stopped</string>
+	<string name="service_name">GPS Logger</string>
 </resources>

@@ -8,6 +8,11 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 
+/**
+ * Class that handles login into the app. 
+ * @author Pawel
+ *
+ */
 public class LoginActivity extends Activity {
 
 	private Button mLoginButton;
@@ -22,9 +27,6 @@ public class LoginActivity extends Activity {
 
 			@Override
 			public void onClick(View v) {
-				//Intent intent = new Intent(getApplicationContext(),
-				//		ItemActivity.class);
-
                 Intent intent = new Intent(getApplicationContext(), ClassListActivity.class);
 				startActivity(intent);
 			}
