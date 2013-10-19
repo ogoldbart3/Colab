@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#ffffff"
+    android:orientation="vertical" >
+
+    <android.support.v4.view.ViewPager
+        android:id="@+id/pager"
+        android:layout_width="match_parent"
+        android:layout_height="400dp" >
+
+        <android.support.v4.view.PagerTitleStrip
+            android:id="@+id/pager_title_strip"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="top"
+            android:background="#33b5e5"
+            android:paddingBottom="10dp"
+            android:paddingTop="10dp"
+            android:textColor="#fff" />
+    </android.support.v4.view.ViewPager>
+
+    <ListView
+        android:id="@+id/chatConversation"
+        android:background="#C0C0C0"    
+        android:layout_marginTop="8dp"    
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:layout_below="@+id/chattingWith"
+        android:layout_marginBottom="40dp"
+        android:transcriptMode="alwaysScroll" >
+
+    </ListView>
+    
+		<EditText
+		    android:id="@+id/chatInputText"
+		    android:hint="Message Here"
+		    android:layout_width="wrap_content"
+		    android:layout_height="wrap_content"
+		    android:layout_alignParentBottom="true"
+		    android:layout_alignTop="@+id/sendChat"
+		    android:layout_marginBottom="6dp"
+		    android:layout_marginLeft="4dp"
+		    android:background="@drawable/text_input"
+		    android:ems="12"
+		    android:minHeight="20dp"
+		    android:padding="0dp" />
+	
+		<Button
+		    android:id="@+id/sendChat"
+		    android:layout_width="wrap_content"
+		    android:layout_height="wrap_content"
+		    android:layout_alignParentBottom="true"
+		    android:layout_alignParentRight="true"
+		    android:layout_marginBottom="5dp"
+		    android:layout_marginRight="2dp"
+		    android:minHeight="20dp"
+		    android:minWidth="60dp"
+		    android:padding="0dp"
+		    android:text="Send"
+		    android:textSize="10dp" />
+
+		<TextView
+		    android:id="@+id/chattingWith"
+		    android:layout_width="wrap_content"
+		    android:layout_height="wrap_content"
+		    android:layout_alignParentTop="true"
+		    android:layout_centerHorizontal="true"
+		    android:layout_marginTop="48dp"
+		    android:text="Student Name"
+		    android:textAppearance="?android:attr/textAppearanceMedium" />
+
+		<Button
+		    android:id="@+id/back"
+		    style="?android:attr/buttonStyleSmall"
+		    android:layout_width="wrap_content"
+		    android:layout_height="wrap_content"
+		    android:layout_alignLeft="@+id/chatInputText"
+		    android:layout_alignParentTop="true"
+		    android:minHeight="20dp"
+		    android:text="Back" />
+
+		<Button
+		    android:id="@+id/settings"
+		    style="?android:attr/buttonStyleSmall"
+		    android:layout_width="wrap_content"
+		    android:layout_height="wrap_content"
+		    android:layout_alignParentTop="true"
+		    android:layout_alignRight="@+id/sendChat"
+		    android:minHeight="20dp"
+		    android:text="Settings" />
+		
+</RelativeLayout>

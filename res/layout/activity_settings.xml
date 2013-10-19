@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#ffffff"
+    android:orientation="vertical" >
+    
+     <ListView
+        android:id="@+id/settings"
+        android:background="#C0C0C0"    
+        android:layout_marginTop="60dp"    
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:layout_below="@+id/chattingWith"
+        android:layout_marginBottom="40dp"
+        android:transcriptMode="alwaysScroll" >
+
+    </ListView>
+
+    <TextView
+        android:id="@+id/settingsLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="40dp"
+        android:text="Settings"
+        android:textStyle="bold"
+        android:textAppearance="?android:attr/textAppearanceMedium" />
+    
+    <Button
+		    android:id="@+id/back"
+		    style="?android:attr/buttonStyleSmall"
+		    android:layout_width="wrap_content"
+		    android:layout_height="wrap_content"
+		    android:layout_alignLeft="@+id/chatInputText"
+		    android:layout_alignParentTop="true"
+		    android:minHeight="20dp"
+		    android:text="Back" />
+
+</RelativeLayout>
