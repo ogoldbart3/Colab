@@ -1,0 +1,132 @@
+<?xml version="1.0"?>
+<api>
+	<description><![CDATA[colab API]]></description>
+	
+	<command id='user' security='private'>
+		<description><![CDATA[User API]]></description>
+		
+		<index>
+			<description><![CDATA[Get a current login student username]]></description>
+			<action file='colab.php' security='private'><![CDATA[getLoginUsername();]]></action> 
+			<!-- <action file='colab.php' security='private'><![CDATA[getCoursesFromTS();]]></action> -->
+		</index>
+		
+		<get>
+			<description><![CDATA[Get a current login student username]]></description>
+			<action file='colab.php' security='private'><![CDATA[getLoginUsername();]]></action>
+		</get>
+			
+		<command id='course' security='private'>
+			<description><![CDATA[Course API]]></description>
+	
+			<index>
+				<description><![CDATA[Get a list of all courses for a student]]></description>
+				<action file='colab.php'><![CDATA[listCourses($_REST['user']);]]></action>
+			</index>
+		
+			<get>
+				<description><![CDATA[Get a course for a student]]></description>
+				<action file='colab.php'><![CDATA[getCourse($_REST['user'], $_REST['user/course']);]]></action>
+			</get>
+			
+			<post>
+				<description><![CDATA[Add a course for a student]]></description>
+				<action file='colab.php'><![CDATA[addCourse($_REST['user']);]]></action>
+			</post>
+			
+			<put>
+				<description><![CDATA[Update a course for a student]]></description>
+				<action file='colab.php'><![CDATA[updateCourse($_REST['user']);]]></action>
+			</put>
+			
+			<delete>
+				<description><![CDATA[Delete a course for a student]]></description>
+				<action file='colab.php'><![CDATA[deleteCourse($_REST['user']);]]></action>
+			</delete>
+			
+			<command id='friend' security='private'>
+				<description><![CDATA[Friend API]]></description>
+			
+				<index>
+					<description><![CDATA[Get a list of all friends for a course]]></description>
+					<action file='colab.php'><![CDATA[listFriends($_REST['user/course']);]]></action>
+				</index>
+			</command>
+			
+			<command id='post' security='private'>
+				<description><![CDATA[Post API]]></description>
+			
+				<index>
+					<description><![CDATA[Get a list of all posts for a course]]></description>
+					<action file='colab.php'><![CDATA[listPosts($_REST['user/course']);]]></action>
+				</index>
+				
+				<get>
+					<description><![CDATA[Get a post for a course]]></description>
+					<action file='colab.php'><![CDATA[getPost($_REST['user/course'], $_REST['user/course/post']);]]></action>
+				</get>
+				
+				<post>
+					<description><![CDATA[Add a post for a course]]></description>
+					<action file='colab.php'><![CDATA[addPost[$_REST['user/course']);]]></action>
+				</post>
+				
+				<put>
+					<description><![CDATA[Update a post for a course]]></description>
+					<action file='colab.php'><![CDATA[updatePost($_REST['user/course']);]]></action>
+				</put>
+				
+				<delete>
+					<description><![CDATA[Delete a post for a course]]></description>
+					<action file='colab.php'><![CDATA[deletePost($_REST['user/course']);]]></action>
+				</delete>
+			
+				<command id='comment' security='private'>
+					<description><![CDATA[Comment API]]></description>
+				
+					<index>
+						<description><![CDATA[Get a list of all comments for a post]]></description>
+						<action file='colab.php'><![CDATA[listComments($_REST['user/course/post']);]]></action>
+					</index>
+					
+					<get>
+						<description><![CDATA[Get a comment for a post]]></description>
+						<action file='colab.php'><![CDATA[getComment($_REST['user/course/post'], $_REST['user/course/post/comment']);]]></action>
+					</get>
+				
+				</command>
+			</command>
+		</command>
+				
+		<command id='location' security='private'>
+			<description><![CDATA[Location API]]></description>
+			
+			<index>
+				<description><![CDATA[This is how you can get current locations of students]]></description>
+				<action file='locations.php'><![CDATA[listLocations();]]></action>
+			</index>
+			
+			<get>
+				<description><![CDATA[This is how you can get a specific location of the user]]></description>
+				<action file='locations.php'><![CDATA[getStudentLocation($_REST['user']);]]></action>
+			</get>
+			
+			<!--
+			<post>
+				<description><![CDATA[This is how you can add a new student location]]></description>
+				<action file='locations.php'><![CDATA[addLocation($_POST['username'], $_POST['longitude'], $_POST['latitude'], $_POST['altitude'], $_POST['accuracy']);]]></action>
+			</post>
+			
+			<put>
+				<description><![CDATA[This is how you can update current location of the student]]></description>
+				<action file='locations.php'><![CDATA[updateLocation($_REST['username'], $_POST['commentText']);]]></action>
+			</put>
+			
+			<delete>
+				<description><![CDATA[This is how you can delete user location]]></description>
+				<action file='locations.php'><![CDATA[deleteLocation($_REST['comment']);]]></action>
+			</delete>
+			-->
+		</command>
+	</command>
+</api>
