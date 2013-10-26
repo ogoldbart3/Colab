@@ -20,7 +20,7 @@ import edu.gatech.mas.interfaces.ISocketOperator;
 
 public class SocketOperator implements ISocketOperator
 {
-	private static final String AUTHENTICATION_SERVER_ADDRESS = "http://143.215.121.109/android-im/"; 
+	private static final String AUTHENTICATION_SERVER_ADDRESS = "http://192.168.1.143/android-im/"; 
 	
 	private int listeningPort = 0;
 	
@@ -43,7 +43,6 @@ public class SocketOperator implements ISocketOperator
 		@Override
 		public void run() {
 			 try {
-				 System.out.println("receive connection run");
 	//			PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
 				BufferedReader in = new BufferedReader(
 						    new InputStreamReader(
@@ -81,12 +80,12 @@ public class SocketOperator implements ISocketOperator
 		String result = new String();
 		try 
 		{
-			
 			url = new URL(AUTHENTICATION_SERVER_ADDRESS);
 			HttpURLConnection connection;
 			connection = (HttpURLConnection) url.openConnection();
 			connection.setDoOutput(true);
 			
+			System.out.println("sending params: " + params);
 			PrintWriter out = new PrintWriter(connection.getOutputStream());
 			
 			out.println(params);
@@ -100,6 +99,7 @@ public class SocketOperator implements ISocketOperator
 			while ((inputLine = in.readLine()) != null) {
 				result = result.concat(inputLine);				
 			}
+			System.out.println("result: " + result);
 			in.close();			
 		} 
 		catch (MalformedURLException e) {

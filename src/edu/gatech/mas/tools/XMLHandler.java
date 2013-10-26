@@ -49,18 +49,10 @@ public class XMLHandler extends DefaultHandler
 			FriendInfo[] friends = new FriendInfo[mFriends.size() + mOnlineFriends.size()];
 			MessageInfo[] messages = new MessageInfo[mUnreadMessages.size()];
 			
-						
 			int offlineFriendCount = mFriends.size();			
 			for (int i = 0; i < offlineFriendCount; i++) 
 			{
 				friends[i] = mFriends.get(i);
-			}
-			
-			int unApprovedFriendCount = mUnapprovedFriends.size();
-			FriendInfo[] unApprovedFriends = new FriendInfo[unApprovedFriendCount];
-			
-			for (int i = 0; i < unApprovedFriends.length; i++) {
-				unApprovedFriends[i] = mUnapprovedFriends.get(i);
 			}
 			
 			int unreadMessagecount = mUnreadMessages.size();
@@ -71,7 +63,7 @@ public class XMLHandler extends DefaultHandler
 				Log.i("MessageLOG", "i="+i );
 			}
 			
-			this.updater.updateData(messages, friends, unApprovedFriends, userKey);
+			this.updater.updateData(messages, friends, userKey);
 			super.endDocument();
 		}		
 		

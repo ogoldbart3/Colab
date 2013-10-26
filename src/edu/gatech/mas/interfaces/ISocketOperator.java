@@ -8,5 +8,4 @@ public interface ISocketOperator {
 	public void stopListening();
 	public void exit();
 	public int getListeningPort();
-
 }

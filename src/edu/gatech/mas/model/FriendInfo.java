@@ -1,6 +1,6 @@
 package edu.gatech.mas.model;
 
-public class FriendInfo{
+public class FriendInfo {
 		
 		public static final String FRIEND_LIST = "friendList";
 		public static final String USERNAME = "username";

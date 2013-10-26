@@ -342,49 +342,6 @@ public class IMService extends Service implements IAppManager, IUpdateData {
 		this.stopSelf();
 	}
 	
-	public String signUpUser(String usernameText, String passwordText,
-			String emailText) 
-	{
-		String params = "username=" + usernameText +
-						"&password=" + passwordText +
-						"&action=" + "signUpUser"+
-						"&email=" + emailText+
-						"&";
-		
-		String result = socketOperator.sendHttpRequest(params);		
-		
-		return result;
-	}
-
-	public String addNewFriendRequest(String friendUsername) 
-	{
-		String params = "username=" + this.username +
-		"&password=" + this.password +
-		"&action=" + "addNewFriend" +
-		"&friendUserName=" + friendUsername +
-		"&";
-
-		String result = socketOperator.sendHttpRequest(params);		
-		
-		return result;
-	}
-
-	public String sendFriendsReqsResponse(String approvedFriendNames,
-			String discardedFriendNames) 
-	{
-		String params = "username=" + this.username +
-		"&password=" + this.password +
-		"&action=" + "responseOfFriendReqs"+
-		"&approvedFriends=" + approvedFriendNames +
-		"&discardedFriends=" +discardedFriendNames +
-		"&";
-
-		String result = socketOperator.sendHttpRequest(params);		
-		
-		return result;
-		
-	} 
-	
 	private Vector<FriendInfo> parseFriendInfo(String xml)
 	{				Vector<FriendInfo> friends = null;
 		try 
@@ -424,11 +381,9 @@ public class IMService extends Service implements IAppManager, IUpdateData {
 		}	
 	}
 
-	public void updateData(MessageInfo[] messages,FriendInfo[] friends,
-			FriendInfo[] unApprovedFriends, String userKey) 
+	public void updateData(MessageInfo[] messages,FriendInfo[] friends, String userKey) 
 	{
 		this.setUserKey(userKey);
-		//FriendController.	
 		MessageController.setMessagesInfo(messages);
 		//Log.i("MESSAGEIMSERVICE","messages.length="+messages.length);
 		
@@ -440,7 +395,6 @@ public class IMService extends Service implements IAppManager, IUpdateData {
 		}
 		
 		FriendController.setFriendsInfo(friends);
-		FriendController.setUnapprovedFriendsInfo(unApprovedFriends);
 	}
 
 

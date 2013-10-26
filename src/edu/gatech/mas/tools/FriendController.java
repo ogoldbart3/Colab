@@ -8,17 +8,14 @@ import edu.gatech.mas.model.FriendInfo;
  */
 public class FriendController 
 {
-	
 	private static FriendInfo[] friendsInfo = null;
-	private static FriendInfo[] unapprovedFriendsInfo = null;
+	// active friends are friends with who we are having a chat 
 	private static String activeFriend;
 	
 	public static void setFriendsInfo(FriendInfo[] friendInfo)
 	{
 		FriendController.friendsInfo = friendInfo;
 	}
-	
-	
 	
 	public static FriendInfo checkFriend(String username, String userKey)
 	{
@@ -48,8 +45,6 @@ public class FriendController
 		return activeFriend;
 	}
 
-
-
 	public static FriendInfo getFriendInfo(String username) 
 	{
 		FriendInfo result = null;
@@ -67,25 +62,8 @@ public class FriendController
 		return result;
 	}
 
-
-
-	public static void setUnapprovedFriendsInfo(FriendInfo[] unapprovedFriends) {
-		unapprovedFriendsInfo = unapprovedFriends;		
-	}
-
-
-
 	public static FriendInfo[] getFriendsInfo() {
 		return friendsInfo;
 	}
-
-
-
-	public static FriendInfo[] getUnapprovedFriendsInfo() {
-		return unapprovedFriendsInfo;
-	}
-	
-	
-	
 
 }

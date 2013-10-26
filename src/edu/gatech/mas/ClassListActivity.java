@@ -16,7 +16,6 @@ import org.json.JSONObject;
 
 import android.annotation.TargetApi;
 import android.app.ActionBar;
-import android.app.Fragment;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
@@ -65,61 +64,36 @@ public class ClassListActivity extends FragmentActivity {
 
 	private FriendInfo[] friends = null;
 
-	private DefaultHttpClient client;
+	private DefaultHttpClient mClient;
+
 	private String sessionName;
 	private String sessionId;
 	private final String apiUsername = "http://dev.m.gatech.edu/user/";
 	private final String apiCourses = "https://shepherd.cip.gatech.edu/proxy/?url=https://pinch1.lms.gatech.edu/sakai-login-tool/container";
 
-	private String username;
+	private String mUsername;
 
-	private IAppManager imService = null;
+	private IAppManager mService = null;
 
 	private boolean isReceiverRegistered;
-
-	public class MessageReceiver extends BroadcastReceiver {
-
-		@Override
-		public void onReceive(Context context, Intent intent) {
-			
-			Log.i("Broadcast receiver ", "received a message");
-			Bundle extra = intent.getExtras();
-			if (extra != null) {
-				String action = intent.getAction();
-				if (action.equals(IMService.FRIEND_LIST_UPDATED)) {
-					System.out.println("friends list updated");
-					for (FriendInfo friend : FriendController.getFriendsInfo()) {
-						System.out.println("friend: " + friend.userName
-								+ ", status: " + friend.status.ordinal());
-					}
-					// taking friend List from broadcast
-					// String rawFriendList =
-					// extra.getString(FriendInfo.FRIEND_LIST);
-					// FriendList.this.parseFriendInfo(rawFriendList);
-					ClassListActivity.this.updateData(
-							FriendController.getFriendsInfo(),
-							FriendController.getUnapprovedFriendsInfo());
-
-				}
-			}
-		}
-
-	};
 
 	public MessageReceiver messageReceiver = new MessageReceiver();
 
 	private ServiceConnection mConnection = new ServiceConnection() {
 		public void onServiceConnected(ComponentName className, IBinder service) {
-			imService = ((IMService.IMBinder) service).getService();
+			mService = ((IMService.IMBinder) service).getService();
 
+			// Currently we have two models for a student - Student and Friend.
+			// Later on Friend has to be merged with Student. Currently all info
+			// is in Friend.
 			FriendInfo[] friends = FriendController.getFriendsInfo(); // imService.getLastRawFriendList();
 			if (friends != null) {
-				ClassListActivity.this.updateData(friends, null); // parseFriendInfo(friendList);
+				ClassListActivity.this.updateData(friends); // parseFriendInfo(friendList);
 			}
 		}
 
 		public void onServiceDisconnected(ComponentName className) {
-			imService = null;
+			mService = null;
 			Toast.makeText(ClassListActivity.this,
 					R.string.local_service_stopped, Toast.LENGTH_SHORT).show();
 		}
@@ -141,12 +115,10 @@ public class ClassListActivity extends FragmentActivity {
 
 		Intent intent = getIntent();
 
-		// To get the data use
+		// Get session data later used for communicating with API
 		Uri data = intent.getData();
 		sessionName = data.getQueryParameter("sessionName");
 		sessionId = data.getQueryParameter("sessionId");
-		System.out.println("SessionName: " + sessionName + ", sessionId: "
-				+ sessionId);
 
 		mClassListPagerAdapter = new ClassListPagerAdapter(
 				getSupportFragmentManager());
@@ -164,53 +136,10 @@ public class ClassListActivity extends FragmentActivity {
 			}
 		});
 
-		if (imService != null) {
-			System.out.println("imService is unfortuantely null");
-		}
-		/**
-		 * Get list of courses
-		 */
-		// new FetchCourses().execute();
-	}
-
-	public void setFriendList(FriendInfo[] friends) {
-		this.friends = friends;
-	}
-
-	public int getCount() {
-
-		return friends.length;
-	}
-
-	public FriendInfo getItem(int position) {
-
-		return friends[position];
-	}
-
-	public long getItemId(int position) {
-
-		return 0;
-	}
-
-	public void updateData(FriendInfo[] friends, FriendInfo[] unApprovedFriends) {
-		if (friends != null) {
-			setFriendList(friends);
-			mClassListPagerAdapter.setCourseList(friends);
-		}
-
-	}
-
-	public String getUsername() {
-		return username;
-	}
-
-	public void setUsername(String username) {
-		this.username = username;
 	}
 
 	@Override
 	protected void onPause() {
-		// TODO: add checking if reciever is registered
 		if (isReceiverRegistered) {
 			try {
 				unregisterReceiver(messageReceiver);
@@ -234,12 +163,44 @@ public class ClassListActivity extends FragmentActivity {
 		new FetchUserName().execute();
 	}
 
+	public void updateData(FriendInfo[] friends) {
+		if (friends != null) {
+			setFriendList(friends);
+			mClassListPagerAdapter.setCourseList(friends);
+		}
+	}
+
+	public class MessageReceiver extends BroadcastReceiver {
+
+		@Override
+		public void onReceive(Context context, Intent intent) {
+
+			Log.i("Broadcast receiver ", "received a message");
+			Bundle extra = intent.getExtras();
+			if (extra != null) {
+				String action = intent.getAction();
+				if (action.equals(IMService.FRIEND_LIST_UPDATED)) {
+
+					for (FriendInfo friend : FriendController.getFriendsInfo()) {
+						System.out.println("friend: " + friend.userName
+								+ ", status: " + friend.status.ordinal());
+					}
+
+					// taking friend List from broadcast
+					ClassListActivity.this.updateData(FriendController.getFriendsInfo());
+
+				}
+			}
+		}
+
+	};
+
 	public class FetchUserName extends AsyncTask<String, Integer, String> {
 
 		@Override
 		protected String doInBackground(String... params) {
 
-			client = new DefaultHttpClient();
+			mClient = new DefaultHttpClient();
 
 			try {
 				URI api = new URI(apiUsername);
@@ -247,7 +208,7 @@ public class ClassListActivity extends FragmentActivity {
 				request.setURI(api);
 				request.setHeader("Cookie", sessionName + "=" + sessionId);
 
-				HttpResponse response = client.execute(request);
+				HttpResponse response = mClient.execute(request);
 				HttpEntity entity = response.getEntity();
 				setUsername(EntityUtils.toString(entity));
 
@@ -276,36 +237,39 @@ public class ClassListActivity extends FragmentActivity {
 					String result = null;
 					try {
 
-						if (imService != null) {
-							result = imService.authenticateUser("pawel");
+						if (mService != null) {
+							result = mService.authenticateUser("testt");
 						} else
-							System.out.println("Im servuce is null");
+							System.out.println("Service is null");
 					} catch (UnsupportedEncodingException e) {
 
 						e.printStackTrace();
 					}
 					if (result == null) {
 						/*
-						 * Authenticatin failed, inform the user
+						 * Authentication failed, inform the user
 						 */
 						handler.post(new Runnable() {
 							public void run() {
-								System.out.println("FRIEND LIST is null");
-								// showDialog(MAKE_SURE_USERNAME_AND_PASSWORD_CORRECT);
+								Toast.makeText(getApplicationContext(),
+										"Students list is null",
+										Toast.LENGTH_SHORT).show();
 							}
 						});
 
 					} else {
 
 						/*
-						 * if result not equal to authentication failed, result
-						 * is equal to friend list of the user
+						 * If authentication was successful, get the list of
+						 * other students in the class
 						 */
 						handler.post(new Runnable() {
 							public void run() {
-								System.out.println("FRIEND LIST UPDATED");
+								Toast.makeText(
+										getApplicationContext(),
+										"Receving list of students in the class ...",
+										Toast.LENGTH_SHORT).show();
 								IntentFilter i = new IntentFilter();
-								// i.addAction(IMService.TAKE_MESSAGE);
 								i.addAction(IMService.FRIEND_LIST_UPDATED);
 								registerReceiver(messageReceiver, i);
 								isReceiverRegistered = true;
@@ -315,7 +279,6 @@ public class ClassListActivity extends FragmentActivity {
 				}
 			};
 			loginThread.start();
-
 		}
 	}
 
@@ -325,7 +288,7 @@ public class ClassListActivity extends FragmentActivity {
 		protected List<Course> doInBackground(String... params) {
 
 			List<Course> courses = new ArrayList<Course>();
-			client = new DefaultHttpClient();
+			mClient = new DefaultHttpClient();
 
 			try {
 				URI api = new URI(apiCourses);
@@ -333,7 +296,7 @@ public class ClassListActivity extends FragmentActivity {
 				request.setURI(api);
 				request.setHeader("Cookie", sessionName + "=" + sessionId);
 
-				HttpResponse response = client.execute(request);
+				HttpResponse response = mClient.execute(request);
 				HttpEntity entity = response.getEntity();
 				String str = EntityUtils.toString(entity);
 				try {
@@ -358,6 +321,33 @@ public class ClassListActivity extends FragmentActivity {
 			return courses;
 		}
 
+	}
+
+	public void setFriendList(FriendInfo[] friends) {
+		this.friends = friends;
+	}
+
+	public int getCount() {
+
+		return friends.length;
+	}
+
+	public FriendInfo getItem(int position) {
+
+		return friends[position];
+	}
+
+	public long getItemId(int position) {
+
+		return 0;
+	}
+
+	public String getUsername() {
+		return mUsername;
+	}
+
+	public void setUsername(String username) {
+		this.mUsername = username;
 	}
 
 }

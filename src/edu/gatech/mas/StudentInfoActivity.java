@@ -23,10 +23,7 @@ public class StudentInfoActivity extends Activity {
 
 	public static String USERNAME_TAG = "username";
 	private Button mPrivateChatButton;
-	private String mUsername;
 	private Student mStudent;
-
-	private String ownusername;
 
 	private IAppManager imService;
 
@@ -66,7 +63,7 @@ public class StudentInfoActivity extends Activity {
 					R.string.local_service_stopped, Toast.LENGTH_SHORT).show();
 		}
 	};
-	
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -74,11 +71,12 @@ public class StudentInfoActivity extends Activity {
 		setContentView(R.layout.activity_student_info);
 
 		Intent intent = getIntent();
-		mUsername = intent.getStringExtra(USERNAME_TAG);
 		mStudent = intent.getParcelableExtra("student");
-		
+
 		mPrivateChatButton = (Button) findViewById(R.id.private_chat_button);
-		mPrivateChatButton.setText("Chat with " + mStudent.getUsername() + ", port: " + mStudent.getPort() +", ip: "+ mStudent.getIp());
+		mPrivateChatButton
+				.setText("Chat with " + mStudent.getUsername() + ", port: "
+						+ mStudent.getPort() + ", ip: " + mStudent.getIp());
 		mPrivateChatButton.setOnClickListener(new OnClickListener() {
 
 			@Override
@@ -96,14 +94,15 @@ public class StudentInfoActivity extends Activity {
 						@Override
 						public void run() {
 							Vector<FriendInfo> result = null;
-																
-								Intent i = new Intent(getApplicationContext(),
-										Messaging.class);
-								i.putExtra(FriendInfo.USERNAME, mStudent.getUsername());
-								i.putExtra(FriendInfo.PORT, mStudent.getPort());
-								i.putExtra(FriendInfo.IP, mStudent.getIp());
-								startActivity(i);
-								System.out.println(result);
+
+							Intent i = new Intent(getApplicationContext(),
+									Messaging.class);
+							i.putExtra(FriendInfo.USERNAME,
+									mStudent.getUsername());
+							i.putExtra(FriendInfo.PORT, mStudent.getPort());
+							i.putExtra(FriendInfo.IP, mStudent.getIp());
+							startActivity(i);
+							System.out.println(result);
 						}
 					};
 					loginThread.start();
@@ -122,9 +121,7 @@ public class StudentInfoActivity extends Activity {
 	@Override
 	protected void onResume() {
 		super.onResume();
-		boolean flag = bindService(new Intent(StudentInfoActivity.this,
-				IMService.class), mConnection, Context.BIND_AUTO_CREATE);
-		System.out.println("flag: " + flag);
-
+		bindService(new Intent(StudentInfoActivity.this, IMService.class),
+				mConnection, Context.BIND_AUTO_CREATE);
 	}
 }

@@ -25,9 +25,7 @@ public class LoginActivity extends Activity {
 	
 	/** Called when the user clicks the Send button */
 	public void performLogin(View view) {
-	    // Do something in response to button
 
-		// Intent myIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://shepherd.cip.gatech.edu/proxy/?url=https://pinch1.lms.gatech.edu/sakai-login-tool/container&sessionTransfer=window"));
 		Intent myIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://dev.m.gatech.edu/login?url=colab://loggedin&sessionTransfer=window"));
 		startActivity(myIntent);
 	}
