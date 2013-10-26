@@ -13,4 +13,9 @@
     <string name="local_service_started">Local service started</string>
     <string name="local_service_stopped">Local service stopped</string>
 	<string name="service_name">GPS Logger</string>
+    <string name="messaging">Messaging</string>
+    <string name="message_cannot_be_sent">Message cannot be sent</string>
+    <string name="OK">OK</string>
+    <string name="georgia_tech_colab_app">Georgia Tech - Colab App</string>
+    <string name="login_here_button">Login here</string>
 </resources>

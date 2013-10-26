@@ -1,18 +1,47 @@
 package edu.gatech.mas;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.util.EntityUtils;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import android.annotation.TargetApi;
+import android.app.ActionBar;
+import android.app.Fragment;
+import android.content.BroadcastReceiver;
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.ServiceConnection;
+import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
+import android.os.Handler;
+import android.os.IBinder;
 import android.support.v4.app.FragmentActivity;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.ViewPager;
+import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
+import android.widget.Toast;
+import edu.gatech.mas.interfaces.IAppManager;
+import edu.gatech.mas.model.Course;
+import edu.gatech.mas.model.FriendInfo;
 import edu.gatech.mas.service.GPSLocationService;
+import edu.gatech.mas.service.IMService;
+import edu.gatech.mas.tools.FriendController;
 
 /**
  * Class that contains a tab swipe activity with classes of a logged in student.
@@ -21,6 +50,7 @@ import edu.gatech.mas.service.GPSLocationService;
  */
 public class ClassListActivity extends FragmentActivity {
 
+	private static String TAG = "ClassListActivity";
 	/**
 	 * This adapter returns a ClassObjectFragment, representing an object in the
 	 * collection/
@@ -32,12 +62,91 @@ public class ClassListActivity extends FragmentActivity {
 	private ViewPager mViewPager;
 
 	private Button mLocationButton;
-	
+
+	private FriendInfo[] friends = null;
+
+	private DefaultHttpClient client;
+	private String sessionName;
+	private String sessionId;
+	private final String apiUsername = "http://dev.m.gatech.edu/user/";
+	private final String apiCourses = "https://shepherd.cip.gatech.edu/proxy/?url=https://pinch1.lms.gatech.edu/sakai-login-tool/container";
+
+	private String username;
+
+	private IAppManager imService = null;
+
+	private boolean isReceiverRegistered;
+
+	public class MessageReceiver extends BroadcastReceiver {
+
+		@Override
+		public void onReceive(Context context, Intent intent) {
+			
+			Log.i("Broadcast receiver ", "received a message");
+			Bundle extra = intent.getExtras();
+			if (extra != null) {
+				String action = intent.getAction();
+				if (action.equals(IMService.FRIEND_LIST_UPDATED)) {
+					System.out.println("friends list updated");
+					for (FriendInfo friend : FriendController.getFriendsInfo()) {
+						System.out.println("friend: " + friend.userName
+								+ ", status: " + friend.status.ordinal());
+					}
+					// taking friend List from broadcast
+					// String rawFriendList =
+					// extra.getString(FriendInfo.FRIEND_LIST);
+					// FriendList.this.parseFriendInfo(rawFriendList);
+					ClassListActivity.this.updateData(
+							FriendController.getFriendsInfo(),
+							FriendController.getUnapprovedFriendsInfo());
+
+				}
+			}
+		}
+
+	};
+
+	public MessageReceiver messageReceiver = new MessageReceiver();
+
+	private ServiceConnection mConnection = new ServiceConnection() {
+		public void onServiceConnected(ComponentName className, IBinder service) {
+			imService = ((IMService.IMBinder) service).getService();
+
+			FriendInfo[] friends = FriendController.getFriendsInfo(); // imService.getLastRawFriendList();
+			if (friends != null) {
+				ClassListActivity.this.updateData(friends, null); // parseFriendInfo(friendList);
+			}
+		}
+
+		public void onServiceDisconnected(ComponentName className) {
+			imService = null;
+			Toast.makeText(ClassListActivity.this,
+					R.string.local_service_stopped, Toast.LENGTH_SHORT).show();
+		}
+	};
+
+	@Override
+	protected void onSaveInstanceState(Bundle outState) {
+		super.onSaveInstanceState(outState);
+	}
 
 	@TargetApi(Build.VERSION_CODES.HONEYCOMB)
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+
+		startService(new Intent(ClassListActivity.this, IMService.class));
+		bindService(new Intent(ClassListActivity.this, IMService.class),
+				mConnection, Context.BIND_AUTO_CREATE);
 		setContentView(R.layout.activity_class_list);
+
+		Intent intent = getIntent();
+
+		// To get the data use
+		Uri data = intent.getData();
+		sessionName = data.getQueryParameter("sessionName");
+		sessionId = data.getQueryParameter("sessionId");
+		System.out.println("SessionName: " + sessionName + ", sessionId: "
+				+ sessionId);
 
 		mClassListPagerAdapter = new ClassListPagerAdapter(
 				getSupportFragmentManager());
@@ -54,41 +163,201 @@ public class ClassListActivity extends FragmentActivity {
 								GPSLocationService.class));
 			}
 		});
-	}
-}
 
-/**
- * An adapter class that returns a ClassObjectFragment, representing an object
- * in the collection.
- * 
- * @author Pawel
- */
-class ClassListPagerAdapter extends FragmentStatePagerAdapter {
-	public ClassListPagerAdapter(FragmentManager fm) {
-		super(fm);
+		if (imService != null) {
+			System.out.println("imService is unfortuantely null");
+		}
+		/**
+		 * Get list of courses
+		 */
+		// new FetchCourses().execute();
 	}
 
-	@Override
-	public Fragment getItem(int i) {
-		Fragment fragment = new ClassObjectFragment();
-		Bundle args = new Bundle();
-
-		// TODO: put in args a class id
-		args.putInt(ClassObjectFragment.ARG_OBJECT, i + 1);
-
-		fragment.setArguments(args);
-		return fragment;
+	public void setFriendList(FriendInfo[] friends) {
+		this.friends = friends;
 	}
 
-	@Override
 	public int getCount() {
-		return 6;
+
+		return friends.length;
+	}
+
+	public FriendInfo getItem(int position) {
+
+		return friends[position];
+	}
+
+	public long getItemId(int position) {
+
+		return 0;
+	}
+
+	public void updateData(FriendInfo[] friends, FriendInfo[] unApprovedFriends) {
+		if (friends != null) {
+			setFriendList(friends);
+			mClassListPagerAdapter.setCourseList(friends);
+		}
+
+	}
+
+	public String getUsername() {
+		return username;
+	}
+
+	public void setUsername(String username) {
+		this.username = username;
 	}
 
 	@Override
-	public CharSequence getPageTitle(int position) {
-		// TODO: add class name from t-square
-		return "Class " + (position + 1);
+	protected void onPause() {
+		// TODO: add checking if reciever is registered
+		if (isReceiverRegistered) {
+			try {
+				unregisterReceiver(messageReceiver);
+			} catch (IllegalArgumentException e) {
+				Log.e(TAG, "Unable to deregister device!");
+			}
+			isReceiverRegistered = false;
+		}
+		unbindService(mConnection);
+		super.onPause();
+	}
+
+	@Override
+	protected void onResume() {
+
+		super.onResume();
+
+		/**
+		 * Get username from server and set it as title in action bar
+		 */
+		new FetchUserName().execute();
+	}
+
+	public class FetchUserName extends AsyncTask<String, Integer, String> {
+
+		@Override
+		protected String doInBackground(String... params) {
+
+			client = new DefaultHttpClient();
+
+			try {
+				URI api = new URI(apiUsername);
+				HttpGet request = new HttpGet();
+				request.setURI(api);
+				request.setHeader("Cookie", sessionName + "=" + sessionId);
+
+				HttpResponse response = client.execute(request);
+				HttpEntity entity = response.getEntity();
+				setUsername(EntityUtils.toString(entity));
+
+			} catch (Exception e) {
+				Log.e("log_tag", "Error in http connection: " + e.toString());
+				e.printStackTrace();
+			}
+
+			return getUsername();
+		}
+
+		@TargetApi(Build.VERSION_CODES.HONEYCOMB)
+		@Override
+		protected void onPostExecute(String result) {
+
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+				ActionBar actionBar = getActionBar();
+				actionBar.setTitle(result);
+			}
+
+			Thread loginThread = new Thread() {
+				private Handler handler = new Handler();
+
+				@Override
+				public void run() {
+					String result = null;
+					try {
+
+						if (imService != null) {
+							result = imService.authenticateUser("pawel");
+						} else
+							System.out.println("Im servuce is null");
+					} catch (UnsupportedEncodingException e) {
+
+						e.printStackTrace();
+					}
+					if (result == null) {
+						/*
+						 * Authenticatin failed, inform the user
+						 */
+						handler.post(new Runnable() {
+							public void run() {
+								System.out.println("FRIEND LIST is null");
+								// showDialog(MAKE_SURE_USERNAME_AND_PASSWORD_CORRECT);
+							}
+						});
+
+					} else {
+
+						/*
+						 * if result not equal to authentication failed, result
+						 * is equal to friend list of the user
+						 */
+						handler.post(new Runnable() {
+							public void run() {
+								System.out.println("FRIEND LIST UPDATED");
+								IntentFilter i = new IntentFilter();
+								// i.addAction(IMService.TAKE_MESSAGE);
+								i.addAction(IMService.FRIEND_LIST_UPDATED);
+								registerReceiver(messageReceiver, i);
+								isReceiverRegistered = true;
+							}
+						});
+					}
+				}
+			};
+			loginThread.start();
+
+		}
+	}
+
+	public class FetchCourses extends AsyncTask<String, Integer, List<Course>> {
+
+		@Override
+		protected List<Course> doInBackground(String... params) {
+
+			List<Course> courses = new ArrayList<Course>();
+			client = new DefaultHttpClient();
+
+			try {
+				URI api = new URI(apiCourses);
+				HttpGet request = new HttpGet();
+				request.setURI(api);
+				request.setHeader("Cookie", sessionName + "=" + sessionId);
+
+				HttpResponse response = client.execute(request);
+				HttpEntity entity = response.getEntity();
+				String str = EntityUtils.toString(entity);
+				try {
+
+					JSONArray JsonArrayForResult = new JSONArray(str);
+
+					for (int i = 0; i < JsonArrayForResult.length(); i++) {
+						JSONObject jsonObject = JsonArrayForResult
+								.getJSONObject(i);
+						// TODO add parsed jsonObject to course array
+					}
+
+				} catch (JSONException e) {
+					e.printStackTrace();
+				}
+
+			} catch (Exception e) {
+				Log.e("log_tag", "Error in http connection: " + e.toString());
+				e.printStackTrace();
+			}
+
+			return courses;
+		}
+
 	}
 
 }
