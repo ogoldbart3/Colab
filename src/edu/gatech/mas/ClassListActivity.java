@@ -38,6 +38,7 @@ import android.widget.Toast;
 import edu.gatech.mas.interfaces.IAppManager;
 import edu.gatech.mas.model.Course;
 import edu.gatech.mas.model.FriendInfo;
+import edu.gatech.mas.model.Student;
 import edu.gatech.mas.service.GPSLocationService;
 import edu.gatech.mas.service.IMService;
 import edu.gatech.mas.tools.FriendController;
@@ -232,7 +233,7 @@ public class ClassListActivity extends FragmentActivity {
 
 			return result;
 		}
-		
+
 		@Override
 		protected void onPostExecute(String result) {
 			new FetchCourses().execute();
@@ -287,7 +288,7 @@ public class ClassListActivity extends FragmentActivity {
 					try {
 
 						if (mService != null) {
-							result = mService.authenticateUser("pawel");
+							result = mService.authenticateUser("testt");
 						} else
 							System.out.println("Service is null");
 					} catch (UnsupportedEncodingException e) {
@@ -367,7 +368,7 @@ public class ClassListActivity extends FragmentActivity {
 				} catch (JSONException e) {
 					e.printStackTrace();
 				}
-				
+
 				for (Course c : mCourses) {
 					System.out.println(c.toString());
 				}
@@ -377,6 +378,76 @@ public class ClassListActivity extends FragmentActivity {
 				e.printStackTrace();
 			}
 			return true;
+		}
+
+		@Override
+		protected void onPostExecute(Boolean result) {
+			new FetchStudentsOfCourse().execute();
+		}
+	}
+
+	public class FetchStudentsOfCourse extends
+			AsyncTask<String, Integer, Boolean> {
+
+		@Override
+		protected Boolean doInBackground(String... params) {
+
+			mClient = new DefaultHttpClient();
+
+			String apiCourses = "http://dev.m.gatech.edu/d/hpun3/w/colab/c/api/user/"
+					+ uid + "/course/";
+
+			try {
+				HttpGet request = new HttpGet();
+				for (Course course : mCourses) {
+					String finalUrl = apiCourses + course.getId() + "/friend";
+					System.out.println("Final api: " + finalUrl);
+					URI finalAPI = new URI(finalUrl);
+
+					request.setURI(finalAPI);
+					request.setHeader("Cookie", sessionName + "=" + sessionId);
+
+					HttpResponse response = mClient.execute(request);
+					HttpEntity entity = response.getEntity();
+					String str = EntityUtils.toString(entity);
+					System.out.println("response: " + str);
+					try {
+
+						List<Student> studentsArray = new ArrayList<Student>();
+						JSONArray JsonArrayForResult = new JSONArray(str);
+
+						for (int i = 0; i < JsonArrayForResult.length(); i++) {
+							JSONObject jsonObject = JsonArrayForResult
+									.getJSONObject(i);
+							Student student = new Student();
+							student.setFirstName(jsonObject
+									.getString("studentFirst"));
+							student.setLastName(jsonObject
+									.getString("studentLast"));
+							studentsArray.add(student);
+						}
+						course.setStudents(studentsArray);
+					} catch (JSONException e) {
+						e.printStackTrace();
+					}
+				}
+				
+				for (Course course : mCourses) {
+					System.out.println(course.getId() + " , courseName: " + course.getName());
+					for (Student student : course.getStudents()) {
+						System.out.println("\tStudent: " + student.getFirstName() + " " + student.getLastName());
+					}
+				}
+
+			} catch (Exception e) {
+				Log.e("log_tag", "Error in http connection: " + e.toString());
+				e.printStackTrace();
+			}
+			return true;
+		}
+
+		@Override
+		protected void onPostExecute(Boolean result) {
 		}
 	}
 

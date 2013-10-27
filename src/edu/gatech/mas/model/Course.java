@@ -74,8 +74,8 @@ public class Course implements Parcelable {
 		return students;
 	}
 
-	public void setStudents(ArrayList<Student> students) {
-		this.students = students;
+	public void setStudents(List<Student> studentsArray) {
+		this.students = studentsArray;
 	}
 	
 	public String getName() {

@@ -8,6 +8,10 @@ public class Student implements Parcelable{
 	
 	private String username;
 	
+	private String firstName;
+	
+	private String lastName;
+	
 	private Status status;
 	
 	private Location location;
@@ -18,8 +22,10 @@ public class Student implements Parcelable{
 
 	public Student()
 	{
-		username = null;
+		username = "";
 		location = null;
+		firstName = "";
+		lastName = "";
 		status = Status.OFFLINE;
 		ip = null;
 		port = null;
@@ -28,10 +34,37 @@ public class Student implements Parcelable{
 	public Student(Parcel in) {
 		this();
 		username = in.readString();
+		firstName = in.readString();
+		lastName = in.readString();
 		ip = in.readString();
 		port = in.readString();
 		location = in.readParcelable(null);
 	}
+	
+	@Override
+	public int describeContents() {
+		return 0;
+	}
+
+	@Override
+	public void writeToParcel(Parcel dest, int flags) {
+		dest.writeString(username);
+		dest.writeString(firstName);
+		dest.writeString(lastName);
+		dest.writeString(ip);
+		dest.writeString(port);
+		dest.writeParcelable(location, flags);
+	}
+
+	public static final Parcelable.Creator<Student> CREATOR = new Parcelable.Creator<Student>() {
+		public Student createFromParcel(Parcel in) {
+			return new Student(in);
+		}
+
+		public Student[] newArray(int size) {
+			return new Student[size];
+		}
+	};
 
 	public String getUsername() {
 		return username;
@@ -47,27 +80,6 @@ public class Student implements Parcelable{
 
 	public void setStatus(Status status) {
 		this.status = status;
-	}
-
-	public Location getLocation() {
-		return location;
-	}
-
-	public void setLocation(Location location) {
-		this.location = location;
-	}
-
-	@Override
-	public int describeContents() {
-		return 0;
-	}
-
-	@Override
-	public void writeToParcel(Parcel dest, int flags) {
-		dest.writeString(username);
-		dest.writeString(ip);
-		dest.writeString(port);
-		dest.writeParcelable(location, flags);
 	}
 
 	public String getIp() {
@@ -86,19 +98,32 @@ public class Student implements Parcelable{
 		this.port = port;
 	}
 	
+	public Location getLocation() {
+		return location;
+	}
+
+	public void setLocation(Location location) {
+		this.location = location;
+	}
+
+	public String getLastName() {
+		return lastName;
+	}
+
+	public void setLastName(String lastName) {
+		this.lastName = lastName;
+	}
+
+	public String getFirstName() {
+		return firstName;
+	}
+
+	public void setFirstName(String firstName) {
+		this.firstName = firstName;
+	}
+
 	@Override
 	public String toString() {
 		return ("Student " + username + ", ip: " + ip + ", port: " + port);
 	}
-
-	public static final Parcelable.Creator<Student> CREATOR = new Parcelable.Creator<Student>() {
-		public Student createFromParcel(Parcel in) {
-			return new Student(in);
-		}
-
-		public Student[] newArray(int size) {
-			return new Student[size];
-		}
-	};
-	
 }
