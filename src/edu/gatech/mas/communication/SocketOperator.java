@@ -20,7 +20,7 @@ import edu.gatech.mas.interfaces.ISocketOperator;
 
 public class SocketOperator implements ISocketOperator
 {
-	private static final String AUTHENTICATION_SERVER_ADDRESS = "http://192.168.1.143/android-im/"; 
+	private static final String AUTHENTICATION_SERVER_ADDRESS = "http://143.215.121.109/android-im/"; 
 	
 	private int listeningPort = 0;
 	
@@ -99,7 +99,6 @@ public class SocketOperator implements ISocketOperator
 			while ((inputLine = in.readLine()) != null) {
 				result = result.concat(inputLine);				
 			}
-			System.out.println("result: " + result);
 			in.close();			
 		} 
 		catch (MalformedURLException e) {

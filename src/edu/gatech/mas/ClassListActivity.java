@@ -68,8 +68,9 @@ public class ClassListActivity extends FragmentActivity {
 
 	private String sessionName;
 	private String sessionId;
-	private final String apiUsername = "http://dev.m.gatech.edu/user/";
-	private final String apiCourses = "https://shepherd.cip.gatech.edu/proxy/?url=https://pinch1.lms.gatech.edu/sakai-login-tool/container";
+
+	public static final String apiUsername = "http://dev.m.gatech.edu/user/";
+	public static final String apiUid = "http://dev.m.gatech.edu/d/hpun3/w/colab/c/api/user/";
 
 	private String mUsername;
 
@@ -78,6 +79,8 @@ public class ClassListActivity extends FragmentActivity {
 	private boolean isReceiverRegistered;
 
 	public MessageReceiver messageReceiver = new MessageReceiver();
+
+	private List<Course> mCourses = new ArrayList<Course>();
 
 	private ServiceConnection mConnection = new ServiceConnection() {
 		public void onServiceConnected(ComponentName className, IBinder service) {
@@ -98,6 +101,7 @@ public class ClassListActivity extends FragmentActivity {
 					R.string.local_service_stopped, Toast.LENGTH_SHORT).show();
 		}
 	};
+	private int uid;
 
 	@Override
 	protected void onSaveInstanceState(Bundle outState) {
@@ -135,7 +139,6 @@ public class ClassListActivity extends FragmentActivity {
 								GPSLocationService.class));
 			}
 		});
-
 	}
 
 	@Override
@@ -187,13 +190,55 @@ public class ClassListActivity extends FragmentActivity {
 					}
 
 					// taking friend List from broadcast
-					ClassListActivity.this.updateData(FriendController.getFriendsInfo());
-
+					ClassListActivity.this.updateData(FriendController
+							.getFriendsInfo());
 				}
 			}
 		}
-
 	};
+
+	public class FetchUId extends AsyncTask<String, Integer, String> {
+
+		@Override
+		protected String doInBackground(String... params) {
+
+			mClient = new DefaultHttpClient();
+			String result = "";
+			try {
+				URI api = new URI(apiUid);
+				HttpGet request = new HttpGet();
+				request.setURI(api);
+				request.setHeader("Cookie", sessionName + "=" + sessionId);
+				System.out.println("Cookie uid: " + sessionName + "="
+						+ sessionId);
+
+				HttpResponse response = mClient.execute(request);
+				HttpEntity entity = response.getEntity();
+				result = EntityUtils.toString(entity);
+
+				try {
+					JSONObject jsonObject = new JSONObject(result);
+					uid = Integer.valueOf(jsonObject.getString("userid"));
+				} catch (JSONException e) {
+					e.printStackTrace();
+				}
+
+				System.out.println("UID: " + uid);
+				// setUId(Integer.parseInt(result));
+			} catch (Exception e) {
+				Log.e("log_tag", "Error in http connection: " + e.toString());
+				e.printStackTrace();
+			}
+
+			return result;
+		}
+		
+		@Override
+		protected void onPostExecute(String result) {
+			new FetchCourses().execute();
+		}
+
+	}
 
 	public class FetchUserName extends AsyncTask<String, Integer, String> {
 
@@ -201,23 +246,24 @@ public class ClassListActivity extends FragmentActivity {
 		protected String doInBackground(String... params) {
 
 			mClient = new DefaultHttpClient();
-
+			String result = "";
 			try {
 				URI api = new URI(apiUsername);
 				HttpGet request = new HttpGet();
 				request.setURI(api);
 				request.setHeader("Cookie", sessionName + "=" + sessionId);
+				System.out.println("Cookie: " + sessionName + "=" + sessionId);
 
 				HttpResponse response = mClient.execute(request);
 				HttpEntity entity = response.getEntity();
-				setUsername(EntityUtils.toString(entity));
-
+				result = EntityUtils.toString(entity);
+				setUsername(result);
 			} catch (Exception e) {
 				Log.e("log_tag", "Error in http connection: " + e.toString());
 				e.printStackTrace();
 			}
 
-			return getUsername();
+			return result;
 		}
 
 		@TargetApi(Build.VERSION_CODES.HONEYCOMB)
@@ -229,6 +275,9 @@ public class ClassListActivity extends FragmentActivity {
 				actionBar.setTitle(result);
 			}
 
+			System.out.println("Getting student id ... ");
+			new FetchUId().execute();
+
 			Thread loginThread = new Thread() {
 				private Handler handler = new Handler();
 
@@ -238,7 +287,7 @@ public class ClassListActivity extends FragmentActivity {
 					try {
 
 						if (mService != null) {
-							result = mService.authenticateUser("testt");
+							result = mService.authenticateUser("pawel");
 						} else
 							System.out.println("Service is null");
 					} catch (UnsupportedEncodingException e) {
@@ -282,13 +331,15 @@ public class ClassListActivity extends FragmentActivity {
 		}
 	}
 
-	public class FetchCourses extends AsyncTask<String, Integer, List<Course>> {
+	public class FetchCourses extends AsyncTask<String, Integer, Boolean> {
 
 		@Override
-		protected List<Course> doInBackground(String... params) {
+		protected Boolean doInBackground(String... params) {
 
-			List<Course> courses = new ArrayList<Course>();
 			mClient = new DefaultHttpClient();
+
+			String apiCourses = "http://dev.m.gatech.edu/d/hpun3/w/colab/c/api/user/"
+					+ uid + "/course";
 
 			try {
 				URI api = new URI(apiCourses);
@@ -306,21 +357,27 @@ public class ClassListActivity extends FragmentActivity {
 					for (int i = 0; i < JsonArrayForResult.length(); i++) {
 						JSONObject jsonObject = JsonArrayForResult
 								.getJSONObject(i);
-						// TODO add parsed jsonObject to course array
+						Course course = new Course();
+						course.setName(jsonObject.getString("courseName"));
+						course.setId(Integer.valueOf(jsonObject
+								.getString("courseId")));
+						mCourses.add(course);
 					}
 
 				} catch (JSONException e) {
 					e.printStackTrace();
+				}
+				
+				for (Course c : mCourses) {
+					System.out.println(c.toString());
 				}
 
 			} catch (Exception e) {
 				Log.e("log_tag", "Error in http connection: " + e.toString());
 				e.printStackTrace();
 			}
-
-			return courses;
+			return true;
 		}
-
 	}
 
 	public void setFriendList(FriendInfo[] friends) {
@@ -348,6 +405,10 @@ public class ClassListActivity extends FragmentActivity {
 
 	public void setUsername(String username) {
 		this.mUsername = username;
+	}
+
+	private void setUId(int result) {
+		this.uid = result;
 	}
 
 }

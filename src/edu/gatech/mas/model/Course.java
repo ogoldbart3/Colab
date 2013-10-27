@@ -19,35 +19,18 @@ public class Course implements Parcelable {
 	public Course() {
 		students = new ArrayList<Student>();
 		setFriendInfos(new ArrayList<FriendInfo>());
-		id = 0;
+		setId(0);
 		setName(null);
 	}
 	
 	private Course(Parcel in) {
 		this();
-		id = in.readInt();
+		setId(in.readInt());
 		in.readList(students, null);
 		in.readList(getFriendInfos(), null);
 		setName(in.readString());
 	}
 	
-	public List<Student> getStudents() {
-		return students;
-	}
-
-	public void setStudents(ArrayList<Student> students) {
-		this.students = students;
-	}
-	
-	public String getName() {
-		return name;
-	}
-
-	public void setName(String name) {
-		this.name = name;
-	}
-
-
 	@Override
 	public int describeContents() {
 		return 0;
@@ -55,7 +38,7 @@ public class Course implements Parcelable {
 
 	@Override
 	public void writeToParcel(Parcel dest, int flags) {
-		dest.writeInt(id);
+		dest.writeInt(getId());
 		dest.writeList(students);
 		dest.writeList(friendInfos);
 		dest.writeString(getName());
@@ -78,4 +61,33 @@ public class Course implements Parcelable {
 			return new Course[size];
 		}
 	};
+	
+	public int getId() {
+		return id;
+	}
+
+	public void setId(int id) {
+		this.id = id;
+	}
+	
+	public List<Student> getStudents() {
+		return students;
+	}
+
+	public void setStudents(ArrayList<Student> students) {
+		this.students = students;
+	}
+	
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+	
+	@Override
+	public String toString() {
+		return new String("Course: " + getName() + ", courseId: " + getId());
+	}
 }
