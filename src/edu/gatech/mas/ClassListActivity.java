@@ -40,6 +40,7 @@ import edu.gatech.mas.interfaces.IAppManager;
 import edu.gatech.mas.model.Course;
 import edu.gatech.mas.model.FriendInfo;
 import edu.gatech.mas.model.Student;
+import edu.gatech.mas.service.ChatService;
 import edu.gatech.mas.service.GPSLocationService;
 import edu.gatech.mas.service.IMService;
 import edu.gatech.mas.tools.FriendController;
@@ -85,7 +86,12 @@ public class ClassListActivity extends FragmentActivity {
 	public static final String apiUsername = "http://dev.m.gatech.edu/user/";
 	public static final String apiUid = "http://dev.m.gatech.edu/d/pkwiecien3/w/colab/c/api/user/";
 
-	private Student mUser;
+	private static Student mUser;
+	
+	public static Student getCurrentUser()
+	{
+		return mUser;
+	}
 	
 	private IAppManager mService = null;
 
@@ -154,6 +160,7 @@ public class ClassListActivity extends FragmentActivity {
 								GPSLocationService.class));
 			}
 		});
+		startService(new Intent(ClassListActivity.this, ChatService.class)); 
 	}
 
 	@Override

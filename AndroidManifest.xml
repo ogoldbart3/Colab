@@ -66,6 +66,13 @@
             </intent-filter>
         </activity>
 
+        
+        <service
+            android:name="edu.gatech.mas.service.ChatService"
+            android:enabled="true"
+            android:exported="true"
+            android:permission="android.permission.ACCESS_NETWORK_STATE" >
+        </service>
         <service
             android:name="edu.gatech.mas.service.IMService"
             android:enabled="true"
