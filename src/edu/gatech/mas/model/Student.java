@@ -6,6 +6,8 @@ import android.os.Parcelable;
 
 public class Student implements Parcelable{
 	
+	private int uid; 
+	
 	private String username;
 	
 	private String firstName;
@@ -22,6 +24,7 @@ public class Student implements Parcelable{
 
 	public Student()
 	{
+		uid = 0;
 		username = "";
 		location = null;
 		firstName = "";
@@ -33,6 +36,7 @@ public class Student implements Parcelable{
 
 	public Student(Parcel in) {
 		this();
+		uid = in.readInt();
 		username = in.readString();
 		firstName = in.readString();
 		lastName = in.readString();
@@ -48,6 +52,7 @@ public class Student implements Parcelable{
 
 	@Override
 	public void writeToParcel(Parcel dest, int flags) {
+		dest.writeInt(uid);
 		dest.writeString(username);
 		dest.writeString(firstName);
 		dest.writeString(lastName);
@@ -66,6 +71,14 @@ public class Student implements Parcelable{
 		}
 	};
 
+	public int getUid() {
+		return uid;
+	}
+
+	public void setUid(int uid) {
+		this.uid = uid;
+	}
+	
 	public String getUsername() {
 		return username;
 	}
@@ -124,6 +137,7 @@ public class Student implements Parcelable{
 
 	@Override
 	public String toString() {
-		return ("Student " + username + ", ip: " + ip + ", port: " + port);
+		return ("Student " + username + ", ip: " + ip + ", port: " + port + ", uid: " + uid);
 	}
+
 }

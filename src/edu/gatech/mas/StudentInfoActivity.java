@@ -24,6 +24,7 @@ public class StudentInfoActivity extends Activity {
 	public static String USERNAME_TAG = "username";
 	private Button mPrivateChatButton;
 	private Student mStudent;
+	private Student mUser;
 
 	private IAppManager imService;
 
@@ -72,6 +73,7 @@ public class StudentInfoActivity extends Activity {
 
 		Intent intent = getIntent();
 		mStudent = intent.getParcelableExtra("student");
+		mUser = intent.getParcelableExtra("user");
 
 		mPrivateChatButton = (Button) findViewById(R.id.private_chat_button);
 		mPrivateChatButton
@@ -101,6 +103,8 @@ public class StudentInfoActivity extends Activity {
 									mStudent.getUsername());
 							i.putExtra(FriendInfo.PORT, mStudent.getPort());
 							i.putExtra(FriendInfo.IP, mStudent.getIp());
+							i.putExtra("student", mStudent);
+							i.putExtra("user", mUser);
 							startActivity(i);
 							System.out.println(result);
 						}

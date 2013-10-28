@@ -13,6 +13,8 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Iterator;
 
+import org.apache.http.client.methods.HttpPost;
+
 import android.util.Log;
 import edu.gatech.mas.interfaces.IAppManager;
 import edu.gatech.mas.interfaces.ISocketOperator;
@@ -20,7 +22,7 @@ import edu.gatech.mas.interfaces.ISocketOperator;
 
 public class SocketOperator implements ISocketOperator
 {
-	private static final String AUTHENTICATION_SERVER_ADDRESS = "http://143.215.121.109/android-im/"; 
+	private static final String AUTHENTICATION_SERVER_ADDRESS = "http://143.215.119.226/android-im/"; 
 	
 	private int listeningPort = 0;
 	
@@ -80,6 +82,7 @@ public class SocketOperator implements ISocketOperator
 		String result = new String();
 		try 
 		{
+			String api = "http://dev.m.gatech.edu/d/pkwiecien3/w/colab/c/api/user/";
 			url = new URL(AUTHENTICATION_SERVER_ADDRESS);
 			HttpURLConnection connection;
 			connection = (HttpURLConnection) url.openConnection();
@@ -99,6 +102,7 @@ public class SocketOperator implements ISocketOperator
 			while ((inputLine = in.readLine()) != null) {
 				result = result.concat(inputLine);				
 			}
+			System.out.println("current result: " + result);
 			in.close();			
 		} 
 		catch (MalformedURLException e) {

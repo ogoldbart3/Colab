@@ -21,11 +21,13 @@ import edu.gatech.mas.model.Student;
 class ClassListPagerAdapter extends FragmentStatePagerAdapter {
 
 	private List<Course> courseList;
-	private FriendInfo[] mFriends;
 
+	private Student user;
+	
 	public ClassListPagerAdapter(FragmentManager fm) {
 		super(fm);
 		courseList = new ArrayList<Course>();
+		user = new Student();
 		generateRandomCourses(); // TODO: replace that with courses from
 									// T-Square
 	}
@@ -58,7 +60,8 @@ class ClassListPagerAdapter extends FragmentStatePagerAdapter {
 
 	@Override
 	public Fragment getItem(int i) {
-		return ClassListFragment.newInstance(courseList.get(i));
+		System.out.println("user is: " + user);
+		return ClassListFragment.newInstance(courseList.get(i), user);
 	}
 
 	@Override
@@ -82,6 +85,16 @@ class ClassListPagerAdapter extends FragmentStatePagerAdapter {
 				currentStudent.setPort(friends[i].port);
 			}
 		}
+	}
+	
+	void setCourseList(List<Course> courses)
+	{
+		this.courseList = courses;
+	}
+	
+	public void setUser(Student user)
+	{
+		this.user = user;
 	}
 
 }

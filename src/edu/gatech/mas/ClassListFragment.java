@@ -26,7 +26,14 @@ public class ClassListFragment extends Fragment {
 	public static String testString = "TestString";
 	TableLayout tableLayout;
 
+	private Student mUser;
+	
 	private Course mCourse;
+	
+	public Course getCourse()
+	{
+		return mCourse;
+	}
 
 	/**
 	 * Helper class that converts dp to px.
@@ -42,11 +49,12 @@ public class ClassListFragment extends Fragment {
 		return px;
 	}
 
-	static ClassListFragment newInstance(Course course) {
+	static ClassListFragment newInstance(Course course, Student user) {
 		ClassListFragment c = new ClassListFragment();
 
 		Bundle args = new Bundle();
 		args.putParcelable("course", course);
+		args.putParcelable("user", user);
 		c.setArguments(args);
 
 		return c;
@@ -56,8 +64,10 @@ public class ClassListFragment extends Fragment {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
-		if (getArguments() != null)
+		if (getArguments() != null) {
 			mCourse = getArguments().getParcelable("course");
+			mUser = getArguments().getParcelable("user");
+		}
 
 	}
 
@@ -68,9 +78,9 @@ public class ClassListFragment extends Fragment {
 		View rootView = inflater.inflate(R.layout.activity_fragment, container,
 				false);
 
-		if (mCourse != null)
+		if (mCourse != null && mUser != null)
 			System.out.println("Now: " + mCourse.getName() + " and students "
-					+ mCourse.getStudents().size());
+					+ mCourse.getStudents().size() + ", and student: " + mUser.getUsername() + ", uid: " + mUser.getUid());
 		else
 			System.out.println("Saved instance is null (mCourse)");
 
@@ -80,7 +90,7 @@ public class ClassListFragment extends Fragment {
 
 			final Student currentStudent = mCourse.getStudents().get(i);
 
-			System.out.println(i + ": " + currentStudent.toString());
+			System.out.println(i + ": " + currentStudent.toString() + ", id: " + currentStudent.getUid());
 
 			// Create row
 			final TableRow tableRow = new TableRow(getActivity());
@@ -140,6 +150,8 @@ public class ClassListFragment extends Fragment {
 					i.putExtra(StudentInfoActivity.USERNAME_TAG,
 							currentStudent.getUsername());
 					i.putExtra("student", currentStudent);
+					i.putExtra("user", mUser);
+					
 					startActivity(i);
 				}
 			});

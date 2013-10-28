@@ -1,7 +1,22 @@
 package edu.gatech.mas;
 
-
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.util.EntityUtils;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -14,7 +29,9 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
+import android.content.UriMatcher;
 import android.database.Cursor;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -28,156 +45,213 @@ import android.widget.Toast;
 import edu.gatech.mas.interfaces.IAppManager;
 import edu.gatech.mas.model.FriendInfo;
 import edu.gatech.mas.model.MessageInfo;
+import edu.gatech.mas.model.Student;
 import edu.gatech.mas.service.IMService;
 import edu.gatech.mas.tools.FriendController;
 import edu.gatech.mas.tools.LocalStorageHandler;
 
-
 public class Messaging extends Activity {
 
 	private static final int MESSAGE_CANNOT_BE_SENT = 0;
+	public Student mUser = null;
+	public Student mReceiver = null;
 	public String username;
 	private EditText messageText;
 	private EditText messageHistoryText;
 	private Button sendMessageButton;
 	private IAppManager imService;
 	private FriendInfo friend = new FriendInfo();
-	private LocalStorageHandler localstoragehandler; 
+	private LocalStorageHandler localstoragehandler;
 	private Cursor dbCursor;
-	
+
 	private ServiceConnection mConnection = new ServiceConnection() {
-      
-		public void onServiceConnected(ComponentName className, IBinder service) {          
-            imService = ((IMService.IMBinder)service).getService();
-        }
-        public void onServiceDisconnected(ComponentName className) {
-        	imService = null;
-            Toast.makeText(Messaging.this, R.string.local_service_stopped,
-                    Toast.LENGTH_SHORT).show();
-        }
-    };
-	
+
+		public void onServiceConnected(ComponentName className, IBinder service) {
+			imService = ((IMService.IMBinder) service).getService();
+		}
+
+		public void onServiceDisconnected(ComponentName className) {
+			imService = null;
+			Toast.makeText(Messaging.this, R.string.local_service_stopped,
+					Toast.LENGTH_SHORT).show();
+		}
+	};
+
 	@Override
-	protected void onCreate(Bundle savedInstanceState) 
-	{
-		super.onCreate(savedInstanceState);	   
-		
-		setContentView(R.layout.messaging_screen); //messaging_screen);
-				
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+
+		setContentView(R.layout.messaging_screen); // messaging_screen);
+
 		messageHistoryText = (EditText) findViewById(R.id.messageHistory);
-		
+
 		messageText = (EditText) findViewById(R.id.message);
-		
-		messageText.requestFocus();			
-		
+
+		messageText.requestFocus();
+
 		sendMessageButton = (Button) findViewById(R.id.sendMessageButton);
-		
+
 		Bundle extras = this.getIntent().getExtras();
-		
-		
+
+		mUser = extras.getParcelable("user");
+		mReceiver = extras.getParcelable("student");
 		friend.userName = extras.getString(FriendInfo.USERNAME);
 		friend.ip = extras.getString(FriendInfo.IP);
 		friend.port = extras.getString(FriendInfo.PORT);
 		String msg = extras.getString(MessageInfo.MESSAGETEXT);
-		 
+
+		if (mReceiver != null) {
+			System.out.println("user is not null in messaging: "
+					+ mReceiver.getUid() + ", username: " + mReceiver.getUsername());
+		} else
+			System.out.println("user is null in messaging!");
+
 		setTitle("Messaging with " + friend.userName);
-	//	EditText friendUserName = (EditText) findViewById(R.id.friendUserName);
-	//	friendUserName.setText(friend.userName);
-		
+		// EditText friendUserName = (EditText)
+		// findViewById(R.id.friendUserName);
+		// friendUserName.setText(friend.userName);
+
 		localstoragehandler = new LocalStorageHandler(this);
 		dbCursor = localstoragehandler.get(friend.userName, IMService.USERNAME);
-		
-		if (dbCursor.getCount() > 0){
-		int noOfScorer = 0;
-		dbCursor.moveToFirst();
-		    while ((!dbCursor.isAfterLast())&&noOfScorer<dbCursor.getCount()) 
-		    {
-		        noOfScorer++;
 
-				this.appendToMessageHistory(dbCursor.getString(2) , dbCursor.getString(3));
-		        dbCursor.moveToNext();
-		    }
+		if (dbCursor.getCount() > 0) {
+			int noOfScorer = 0;
+			dbCursor.moveToFirst();
+			while ((!dbCursor.isAfterLast())
+					&& noOfScorer < dbCursor.getCount()) {
+				noOfScorer++;
+
+				this.appendToMessageHistory(dbCursor.getString(2),
+						dbCursor.getString(3));
+				dbCursor.moveToNext();
+			}
 		}
 		localstoragehandler.close();
-		
-		if (msg != null) 
-		{
-			this.appendToMessageHistory(friend.userName , msg);
-			((NotificationManager)getSystemService(NOTIFICATION_SERVICE)).cancel((friend.userName+msg).hashCode());
+
+		if (msg != null) {
+			this.appendToMessageHistory(friend.userName, msg);
+			((NotificationManager) getSystemService(NOTIFICATION_SERVICE))
+					.cancel((friend.userName + msg).hashCode());
 		}
-		
-		sendMessageButton.setOnClickListener(new OnClickListener(){
+
+		sendMessageButton.setOnClickListener(new OnClickListener() {
 			CharSequence message;
 			Handler handler = new Handler();
+
 			public void onClick(View arg0) {
 				message = messageText.getText();
-				if (message.length()>0) 
-				{		
-					appendToMessageHistory(imService.getUsername(), message.toString());
-					
-					localstoragehandler.insert(imService.getUsername(), friend.userName, message.toString());
-								
+				if (message.length() > 0) {
+					appendToMessageHistory(imService.getUsername(),
+							message.toString());
+
+					localstoragehandler.insert(imService.getUsername(),
+							friend.userName, message.toString());
+
 					messageText.setText("");
-					Thread thread = new Thread(){					
+
+					new PostMessageToDb().execute(message.toString());
+
+					Thread thread = new Thread() {
 						public void run() {
 							try {
-								if (imService.sendMessage(imService.getUsername(), friend.userName, message.toString()) == null)
-								{
-									handler.post(new Runnable(){	
+								if (imService.sendMessage(
+										imService.getUsername(),
+										friend.userName, message.toString()) == null) {
+									handler.post(new Runnable() {
 										public void run() {
-									        Toast.makeText(getApplicationContext(),R.string.message_cannot_be_sent, Toast.LENGTH_LONG).show();
-											//showDialog(MESSAGE_CANNOT_BE_SENT);										
+											Toast.makeText(
+													getApplicationContext(),
+													R.string.message_cannot_be_sent,
+													Toast.LENGTH_LONG).show();
+											// showDialog(MESSAGE_CANNOT_BE_SENT);
 										}
 									});
 								}
 							} catch (UnsupportedEncodingException e) {
-								Toast.makeText(getApplicationContext(),R.string.message_cannot_be_sent, Toast.LENGTH_LONG).show();
+								Toast.makeText(getApplicationContext(),
+										R.string.message_cannot_be_sent,
+										Toast.LENGTH_LONG).show();
 
 								e.printStackTrace();
 							}
-						}						
+						}
 					};
 					thread.start();
 				}
-			}});
-		
-		messageText.setOnKeyListener(new OnKeyListener(){
-			public boolean onKey(View v, int keyCode, KeyEvent event) 
-			{
-				if (keyCode == 66){
+			}
+		});
+
+		messageText.setOnKeyListener(new OnKeyListener() {
+			public boolean onKey(View v, int keyCode, KeyEvent event) {
+				if (keyCode == 66) {
 					sendMessageButton.performClick();
 					return true;
 				}
 				return false;
 			}
 		});
-				
+
+	}
+
+	class PostMessageToDb extends AsyncTask<String, String, Boolean> {
+
+		@Override
+		protected Boolean doInBackground(String... params) {
+
+			String message = params[0];
+			HttpClient httpclient = new DefaultHttpClient();
+			String api = "http://dev.m.gatech.edu/d/pkwiecien3/w/colab/c/api/user/4/chatting/";
+			
+		    System.out.println("Sending message:  " + message + ", to: "+ api);
+		    try {
+		        // Add your data
+		    	URI uri = new URI(api);
+			    HttpPost httppost = new HttpPost(uri);
+
+		        List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>();
+		        nameValuePairs.add(new BasicNameValuePair("message", message.trim()));
+
+		        httppost.setHeader("Cookie", ClassListActivity.getSessionName() + "=" + ClassListActivity.getSessionId());
+		        httppost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
+		        
+		        // Execute HTTP Post Request
+		        HttpResponse response = httpclient.execute(httppost);
+				HttpEntity entity = response.getEntity();
+				String result = EntityUtils.toString(entity);
+		        System.out.println("result of posting to db: " + result);
+		    } catch (ClientProtocolException e) {
+		        e.printStackTrace();
+		    } catch (IOException e) {
+		        e.printStackTrace();
+		    } catch (URISyntaxException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			return true;
+		}
 	}
 
 	@Override
 	protected Dialog onCreateDialog(int id) {
 		int message = -1;
-		switch (id)
-		{
+		switch (id) {
 		case MESSAGE_CANNOT_BE_SENT:
 			message = R.string.message_cannot_be_sent;
-		break;
+			break;
 		}
-		
-		if (message == -1)
-		{
+
+		if (message == -1) {
 			return null;
-		}
-		else
-		{
-			return new AlertDialog.Builder(Messaging.this)       
-			.setMessage(message)
-			.setPositiveButton(R.string.OK, new DialogInterface.OnClickListener() {
-				public void onClick(DialogInterface dialog, int whichButton) {
-					/* User clicked OK so do some stuff */
-				}
-			})        
-			.create();
+		} else {
+			return new AlertDialog.Builder(Messaging.this)
+					.setMessage(message)
+					.setPositiveButton(R.string.OK,
+							new DialogInterface.OnClickListener() {
+								public void onClick(DialogInterface dialog,
+										int whichButton) {
+									/* User clicked OK so do some stuff */
+								}
+							}).create();
 		}
 	}
 
@@ -186,75 +260,70 @@ public class Messaging extends Activity {
 		super.onPause();
 		unregisterReceiver(messageReceiver);
 		unbindService(mConnection);
-		
+
 		FriendController.setActiveFriend(null);
-		
+
 	}
 
 	@Override
-	protected void onResume() 
-	{		
+	protected void onResume() {
 		super.onResume();
-		boolean flag = bindService(new Intent(Messaging.this, IMService.class), mConnection , Context.BIND_AUTO_CREATE);
-				
-		System.out.println("messaging connection falg: " + flag);
+		bindService(new Intent(Messaging.this, IMService.class), mConnection,
+				Context.BIND_AUTO_CREATE);
+
 		IntentFilter i = new IntentFilter();
 		i.addAction(IMService.TAKE_MESSAGE);
-		
+
 		registerReceiver(messageReceiver, i);
-		
-		FriendController.setActiveFriend(friend.userName);		
+
+		FriendController.setActiveFriend(friend.userName);
 	}
-	
-	
-	public class  MessageReceiver extends BroadcastReceiver {
+
+	public class MessageReceiver extends BroadcastReceiver {
 
 		@Override
-		public void onReceive(Context context, Intent intent) 
-		{		
+		public void onReceive(Context context, Intent intent) {
 			Bundle extra = intent.getExtras();
-			String username = extra.getString(MessageInfo.USERID);			
+			String username = extra.getString(MessageInfo.USERID);
 			String message = extra.getString(MessageInfo.MESSAGETEXT);
-			
-			if (username != null && message != null)
-			{
+
+			if (username != null && message != null) {
 				if (friend.userName.equals(username)) {
 					appendToMessageHistory(username, message);
-					localstoragehandler.insert(username,imService.getUsername(), message);
-					
-				}
-				else {
+					localstoragehandler.insert(username,
+							imService.getUsername(), message);
+
+				} else {
 					if (message.length() > 15) {
 						message = message.substring(0, 15);
 					}
-					Toast.makeText(Messaging.this,  username + " says '"+
-													message + "'",
-													Toast.LENGTH_SHORT).show();		
+					Toast.makeText(Messaging.this,
+							username + " says '" + message + "'",
+							Toast.LENGTH_SHORT).show();
 				}
-			}			
+			}
 		}
-		
+
 	};
+
 	private MessageReceiver messageReceiver = new MessageReceiver();
-	
-	public  void appendToMessageHistory(String username, String message) {
+
+	public void appendToMessageHistory(String username, String message) {
 		if (username != null && message != null) {
-			messageHistoryText.append(username + ":\n");								
+			messageHistoryText.append(username + ":\n");
 			messageHistoryText.append(message + "\n");
 		}
 	}
-	
-	
+
 	@Override
 	protected void onDestroy() {
-	    super.onDestroy();
-	    if (localstoragehandler != null) {
-	    	localstoragehandler.close();
-	    }
-	    if (dbCursor != null) {
-	    	dbCursor.close();
-	    }
+		super.onDestroy();
+		if (localstoragehandler != null) {
+			localstoragehandler.close();
+		}
+		if (dbCursor != null) {
+			dbCursor.close();
+		}
 	}
-	
 
 }

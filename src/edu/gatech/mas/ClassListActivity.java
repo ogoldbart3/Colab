@@ -22,6 +22,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
+import android.hardware.usb.UsbConstants;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -67,14 +68,25 @@ public class ClassListActivity extends FragmentActivity {
 
 	private DefaultHttpClient mClient;
 
-	private String sessionName;
-	private String sessionId;
+	private static String sessionName;
+	
+	private static String sessionId;
 
+	public static String getSessionName()
+	{
+		return sessionName;
+	}
+	
+	public static String getSessionId()
+	{
+		return sessionId;
+	}
+	
 	public static final String apiUsername = "http://dev.m.gatech.edu/user/";
-	public static final String apiUid = "http://dev.m.gatech.edu/d/hpun3/w/colab/c/api/user/";
+	public static final String apiUid = "http://dev.m.gatech.edu/d/pkwiecien3/w/colab/c/api/user/";
 
-	private String mUsername;
-
+	private Student mUser;
+	
 	private IAppManager mService = null;
 
 	private boolean isReceiverRegistered;
@@ -102,13 +114,15 @@ public class ClassListActivity extends FragmentActivity {
 					R.string.local_service_stopped, Toast.LENGTH_SHORT).show();
 		}
 	};
-	private int uid;
 
 	@Override
 	protected void onSaveInstanceState(Bundle outState) {
 		super.onSaveInstanceState(outState);
 	}
-
+	public ClassListActivity() {
+		mUser = new Student();
+	}
+	
 	@TargetApi(Build.VERSION_CODES.HONEYCOMB)
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -205,6 +219,7 @@ public class ClassListActivity extends FragmentActivity {
 
 			mClient = new DefaultHttpClient();
 			String result = "";
+			int uid = 0;
 			try {
 				URI api = new URI(apiUid);
 				HttpGet request = new HttpGet();
@@ -224,8 +239,9 @@ public class ClassListActivity extends FragmentActivity {
 					e.printStackTrace();
 				}
 
+				mUser.setUid(uid);
+				mClassListPagerAdapter.setUser(mUser);
 				System.out.println("UID: " + uid);
-				// setUId(Integer.parseInt(result));
 			} catch (Exception e) {
 				Log.e("log_tag", "Error in http connection: " + e.toString());
 				e.printStackTrace();
@@ -258,7 +274,7 @@ public class ClassListActivity extends FragmentActivity {
 				HttpResponse response = mClient.execute(request);
 				HttpEntity entity = response.getEntity();
 				result = EntityUtils.toString(entity);
-				setUsername(result);
+				mUser.setUsername(result);
 			} catch (Exception e) {
 				Log.e("log_tag", "Error in http connection: " + e.toString());
 				e.printStackTrace();
@@ -339,8 +355,8 @@ public class ClassListActivity extends FragmentActivity {
 
 			mClient = new DefaultHttpClient();
 
-			String apiCourses = "http://dev.m.gatech.edu/d/hpun3/w/colab/c/api/user/"
-					+ uid + "/course";
+			String apiCourses = "http://dev.m.gatech.edu/d/pkwiecien3/w/colab/c/api/user/"
+					+ mUser.getUid() + "/course";
 
 			try {
 				URI api = new URI(apiCourses);
@@ -369,6 +385,7 @@ public class ClassListActivity extends FragmentActivity {
 					e.printStackTrace();
 				}
 
+				System.out.println("Printing out he courses");
 				for (Course c : mCourses) {
 					System.out.println(c.toString());
 				}
@@ -394,8 +411,8 @@ public class ClassListActivity extends FragmentActivity {
 
 			mClient = new DefaultHttpClient();
 
-			String apiCourses = "http://dev.m.gatech.edu/d/hpun3/w/colab/c/api/user/"
-					+ uid + "/course/";
+			String apiCourses = "http://dev.m.gatech.edu/d/pkwiecien3/w/colab/c/api/user/"
+					+ mUser.getUid() + "/course/";
 
 			try {
 				HttpGet request = new HttpGet();
@@ -468,18 +485,6 @@ public class ClassListActivity extends FragmentActivity {
 	public long getItemId(int position) {
 
 		return 0;
-	}
-
-	public String getUsername() {
-		return mUsername;
-	}
-
-	public void setUsername(String username) {
-		this.mUsername = username;
-	}
-
-	private void setUId(int result) {
-		this.uid = result;
 	}
 
 }
