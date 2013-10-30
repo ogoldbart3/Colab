@@ -265,7 +265,6 @@ public class IMService extends Service implements IAppManager, IUpdateData {
 
 	public void messageReceived(String username, String message) 
 	{				
-		
 		//FriendInfo friend = FriendController.getFriendInfo(username);
 		MessageInfo msg = MessageController.checkMessage(username);
 		if ( msg != null)

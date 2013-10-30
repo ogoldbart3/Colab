@@ -14,16 +14,14 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import edu.gatech.mas.ClassListActivity;
-import edu.gatech.mas.model.Course;
-
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.IBinder;
 import android.util.Log;
-import android.widget.Toast;
+import edu.gatech.mas.ClassListActivity;
+import edu.gatech.mas.model.Message;
 
 /**
  * Service that gets the chat messages.
@@ -32,6 +30,8 @@ import android.widget.Toast;
  * 
  */
 public class ChatService extends Service {
+
+	public static final String TAKE = "Take_Message";
 	private static Timer timer = new Timer();
 	private Context ctx;
 
@@ -51,10 +51,11 @@ public class ChatService extends Service {
 
 	private class mainTask extends TimerTask {
 		public void run() {
-			new FetchUId().execute();
+			new FetchMessage().execute();
 		}
 	}
-	public class FetchUId extends AsyncTask<String, Integer, String> {
+
+	public class FetchMessage extends AsyncTask<String, Integer, String> {
 
 		@Override
 		protected String doInBackground(String... params) {
@@ -62,28 +63,25 @@ public class ChatService extends Service {
 			HttpClient mClient = new DefaultHttpClient();
 			String result = "";
 			try {
-				URI api = new URI("http://dev.m.gatech.edu/d/pkwiecien3/w/colab/c/api/user/"+ClassListActivity.getCurrentUser().getUid()+"/chatting/unread");
+				URI api = new URI(
+						"http://dev.m.gatech.edu/d/pkwiecien3/w/colab/c/api/user/"
+								+ ClassListActivity.getCurrentUser().getUid()
+								+ "/chatting/unread");
 				HttpGet request = new HttpGet();
 				request.setURI(api);
-				request.setHeader("Cookie", ClassListActivity.getSessionName() + "=" + ClassListActivity.getSessionId());
-				System.out.println("running Cookie: " + ClassListActivity.getSessionName() + "=" + ClassListActivity.getSessionId());
-				
+				request.setHeader("Cookie", ClassListActivity.getSessionName()
+						+ "=" + ClassListActivity.getSessionId());
+				System.out.println("running Cookie: "
+						+ ClassListActivity.getSessionName() + "="
+						+ ClassListActivity.getSessionId());
+
 				HttpResponse response = mClient.execute(request);
 				HttpEntity entity = response.getEntity();
 				result = EntityUtils.toString(entity);
-				
-				try {
 
-					JSONArray JsonArrayForResult = new JSONArray(result);
-
-					for (int i = 0; i < JsonArrayForResult.length(); i++) {
-						JSONObject jsonObject = JsonArrayForResult
-								.getJSONObject(i);
-						System.out.println("running: " + jsonObject.getString("touid"));
-					}
-
-				} catch (JSONException e) {
-					e.printStackTrace();
+				Message message = parseMessage(result);
+				if (message != null) {
+					broadCastMessage(message);
 				}
 
 			} catch (Exception e) {
@@ -93,6 +91,43 @@ public class ChatService extends Service {
 
 			return result;
 		}
+	}
+
+	private void broadCastMessage(Message message) {
+		Intent i = new Intent(TAKE);
+		i.putExtra("test", "test");
+		i.putExtra(Message.MESSAGE_TAG, message);
+		sendBroadcast(i);
+		System.out.println("Broadcasting message: " + message.toString());
+
+		/*
+		 * String activeFriend = FriendController.getActiveFriend(); if
+		 * (activeFriend == null || activeFriend.equals(username) == false) {
+		 * localstoragehandler.insert(username,this.getUsername(),
+		 * message.toString()); showNotification(username, message); }
+		 */
+	}
+
+	private Message parseMessage(String result) {
+		Message newMessage = new Message();
+		try {
+
+			JSONArray JsonArrayForResult = new JSONArray(result);
+
+			for (int i = 0; i < JsonArrayForResult.length(); i++) {
+				JSONObject jsonObject = JsonArrayForResult.getJSONObject(i);
+				newMessage.setRead(0);
+				newMessage.setMessageText(jsonObject.getString("messagetext"));
+				newMessage.setUserId(Integer.parseInt(jsonObject
+						.getString("fromuid")));
+				newMessage.setSentTo(Integer.parseInt(jsonObject
+						.getString("touid")));
+			}
+
+		} catch (JSONException e) {
+			return null;
+		}
+		return newMessage;
 	}
 
 	public void onDestroy() {

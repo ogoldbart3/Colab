@@ -55,7 +55,6 @@ public class LocalStorageHandler extends SQLiteOpenHelper {
 	public void insert(String sender, String receiver, String message){
 		long rowId = -1;
 		try{
-			
 			SQLiteDatabase db = getWritableDatabase();
 			ContentValues values = new ContentValues();
 			values.put(MESSAGE_RECEIVER, receiver);

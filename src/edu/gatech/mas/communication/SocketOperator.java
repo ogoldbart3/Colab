@@ -22,7 +22,7 @@ import edu.gatech.mas.interfaces.ISocketOperator;
 
 public class SocketOperator implements ISocketOperator
 {
-	private static final String AUTHENTICATION_SERVER_ADDRESS = "http://143.215.119.226/android-im/"; 
+	private static final String AUTHENTICATION_SERVER_ADDRESS = "http://143.215.123.65/android-im/"; 
 	
 	private int listeningPort = 0;
 	

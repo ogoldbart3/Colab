@@ -29,7 +29,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
-import android.content.UriMatcher;
 import android.database.Cursor;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -44,8 +43,10 @@ import android.widget.EditText;
 import android.widget.Toast;
 import edu.gatech.mas.interfaces.IAppManager;
 import edu.gatech.mas.model.FriendInfo;
+import edu.gatech.mas.model.Message;
 import edu.gatech.mas.model.MessageInfo;
 import edu.gatech.mas.model.Student;
+import edu.gatech.mas.service.ChatService;
 import edu.gatech.mas.service.IMService;
 import edu.gatech.mas.tools.FriendController;
 import edu.gatech.mas.tools.LocalStorageHandler;
@@ -102,7 +103,8 @@ public class Messaging extends Activity {
 
 		if (mReceiver != null) {
 			System.out.println("user is not null in messaging: "
-					+ mReceiver.getUid() + ", username: " + mReceiver.getUsername());
+					+ mReceiver.getUid() + ", username: "
+					+ mReceiver.getUsername());
 		} else
 			System.out.println("user is null in messaging!");
 
@@ -141,16 +143,16 @@ public class Messaging extends Activity {
 			public void onClick(View arg0) {
 				message = messageText.getText();
 				if (message.length() > 0) {
-					appendToMessageHistory(imService.getUsername(),
+					/* appendToMessageHistory(imService.getUsername(),
 							message.toString());
 
 					localstoragehandler.insert(imService.getUsername(),
 							friend.userName, message.toString());
-
+					*/
 					messageText.setText("");
 
 					new PostMessageToDb().execute(message.toString());
-
+					/*
 					Thread thread = new Thread() {
 						public void run() {
 							try {
@@ -176,7 +178,7 @@ public class Messaging extends Activity {
 							}
 						}
 					};
-					thread.start();
+					thread.start();*/
 				}
 			}
 		});
@@ -201,30 +203,31 @@ public class Messaging extends Activity {
 			String message = params[0];
 			HttpClient httpclient = new DefaultHttpClient();
 			String api = "http://dev.m.gatech.edu/d/pkwiecien3/w/colab/c/api/user/4/chatting/";
-			
-		    System.out.println("Sending message:  " + message + ", to: "+ api);
-		    try {
-		        // Add your data
-		    	URI uri = new URI(api);
-			    HttpPost httppost = new HttpPost(uri);
 
-		        List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>();
-		        nameValuePairs.add(new BasicNameValuePair("message", message.trim()));
+			System.out.println("Sending message:  " + message + ", to: " + api);
+			try {
+				// Add your data
+				URI uri = new URI(api);
+				HttpPost httppost = new HttpPost(uri);
 
-		        httppost.setHeader("Cookie", ClassListActivity.getSessionName() + "=" + ClassListActivity.getSessionId());
-		        httppost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
-		        
-		        // Execute HTTP Post Request
-		        HttpResponse response = httpclient.execute(httppost);
+				List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>();
+				nameValuePairs.add(new BasicNameValuePair("message", message
+						.trim()));
+
+				httppost.setHeader("Cookie", ClassListActivity.getSessionName()
+						+ "=" + ClassListActivity.getSessionId());
+				httppost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
+
+				// Execute HTTP Post Request
+				HttpResponse response = httpclient.execute(httppost);
 				HttpEntity entity = response.getEntity();
 				String result = EntityUtils.toString(entity);
-		        System.out.println("result of posting to db: " + result);
-		    } catch (ClientProtocolException e) {
-		        e.printStackTrace();
-		    } catch (IOException e) {
-		        e.printStackTrace();
-		    } catch (URISyntaxException e) {
-				// TODO Auto-generated catch block
+				System.out.println("result of posting to db: " + result);
+			} catch (ClientProtocolException e) {
+				e.printStackTrace();
+			} catch (IOException e) {
+				e.printStackTrace();
+			} catch (URISyntaxException e) {
 				e.printStackTrace();
 			}
 			return true;
@@ -259,6 +262,7 @@ public class Messaging extends Activity {
 	protected void onPause() {
 		super.onPause();
 		unregisterReceiver(messageReceiver);
+		unregisterReceiver(pollMessageReceiver);
 		unbindService(mConnection);
 
 		FriendController.setActiveFriend(null);
@@ -268,15 +272,17 @@ public class Messaging extends Activity {
 	@Override
 	protected void onResume() {
 		super.onResume();
-		bindService(new Intent(Messaging.this, IMService.class), mConnection,
-				Context.BIND_AUTO_CREATE);
+		//bindService(new Intent(Messaging.this, IMService.class), mConnection,
+		//		Context.BIND_AUTO_CREATE);
 
 		IntentFilter i = new IntentFilter();
-		i.addAction(IMService.TAKE_MESSAGE);
+		//i.addAction(IMService.TAKE_MESSAGE);
+		i.addAction(ChatService.TAKE);
+		//registerReceiver(messageReceiver, i);
+		registerReceiver(pollMessageReceiver, i);
+		
 
-		registerReceiver(messageReceiver, i);
-
-		FriendController.setActiveFriend(friend.userName);
+		//FriendController.setActiveFriend(friend.userName);
 	}
 
 	public class MessageReceiver extends BroadcastReceiver {
@@ -307,6 +313,40 @@ public class Messaging extends Activity {
 	};
 
 	private MessageReceiver messageReceiver = new MessageReceiver();
+
+	public class PollMessageReceiver extends BroadcastReceiver {
+
+		@Override
+		public void onReceive(Context context, Intent intent) {
+			Bundle extra = intent.getExtras();
+			String test = extra.getString("test");
+			System.out.println("Receving message" + test);
+			Message message = extra.getParcelable(Message.MESSAGE_TAG);
+			if (message != null) {
+				// TODO delete this mReceiver
+				if (mReceiver.getUid() == 0 || mReceiver.getUid() == message.getSentTo()) {
+					System.out.println("Message: " + message.toString());
+					appendToMessageHistory("User " + message.getUserId(), message.getMessageText());
+					//localstoragehandler.insert(username,
+					//		imService.getUsername(), message);
+
+				} else {
+					String messageText = message.getMessageText().substring(0,
+							15);
+					if (message.getMessageText().length() > 15) {
+						messageText = messageText.substring(0, 15);
+					}
+					Toast.makeText(
+							Messaging.this,
+							message.getUserId() + " says '" + messageText + "'",
+							Toast.LENGTH_SHORT).show();
+				}
+			}
+		}
+
+	};
+
+	private PollMessageReceiver pollMessageReceiver = new PollMessageReceiver();
 
 	public void appendToMessageHistory(String username, String message) {
 		if (username != null && message != null) {
