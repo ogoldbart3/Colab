@@ -1,6 +1,5 @@
 package edu.gatech.mas;
 
-import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
@@ -16,34 +15,21 @@ import org.json.JSONObject;
 
 import android.annotation.TargetApi;
 import android.app.ActionBar;
-import android.content.BroadcastReceiver;
-import android.content.ComponentName;
-import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
-import android.content.ServiceConnection;
-import android.hardware.usb.UsbConstants;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.IBinder;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.view.ViewPager;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
-import android.widget.Toast;
-import edu.gatech.mas.interfaces.IAppManager;
 import edu.gatech.mas.model.Course;
-import edu.gatech.mas.model.FriendInfo;
 import edu.gatech.mas.model.Student;
 import edu.gatech.mas.service.ChatService;
 import edu.gatech.mas.service.GPSLocationService;
-import edu.gatech.mas.service.IMService;
-import edu.gatech.mas.tools.FriendController;
 
 /**
  * Class that contains a tab swipe activity with classes of a logged in student.
@@ -64,8 +50,6 @@ public class ClassListActivity extends FragmentActivity {
 	private ViewPager mViewPager;
 
 	private Button mLocationButton;
-
-	private FriendInfo[] friends = null;
 
 	private DefaultHttpClient mClient;
 
@@ -93,33 +77,9 @@ public class ClassListActivity extends FragmentActivity {
 		return mUser;
 	}
 	
-	private IAppManager mService = null;
-
 	private boolean isReceiverRegistered;
 
-	public MessageReceiver messageReceiver = new MessageReceiver();
-
 	private List<Course> mCourses = new ArrayList<Course>();
-
-	private ServiceConnection mConnection = new ServiceConnection() {
-		public void onServiceConnected(ComponentName className, IBinder service) {
-			mService = ((IMService.IMBinder) service).getService();
-
-			// Currently we have two models for a student - Student and Friend.
-			// Later on Friend has to be merged with Student. Currently all info
-			// is in Friend.
-			FriendInfo[] friends = FriendController.getFriendsInfo(); // imService.getLastRawFriendList();
-			if (friends != null) {
-				ClassListActivity.this.updateData(friends); // parseFriendInfo(friendList);
-			}
-		}
-
-		public void onServiceDisconnected(ComponentName className) {
-			mService = null;
-			Toast.makeText(ClassListActivity.this,
-					R.string.local_service_stopped, Toast.LENGTH_SHORT).show();
-		}
-	};
 
 	@Override
 	protected void onSaveInstanceState(Bundle outState) {
@@ -133,9 +93,6 @@ public class ClassListActivity extends FragmentActivity {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
-		startService(new Intent(ClassListActivity.this, IMService.class));
-		bindService(new Intent(ClassListActivity.this, IMService.class),
-				mConnection, Context.BIND_AUTO_CREATE);
 		setContentView(R.layout.activity_class_list);
 
 		Intent intent = getIntent();
@@ -165,15 +122,6 @@ public class ClassListActivity extends FragmentActivity {
 
 	@Override
 	protected void onPause() {
-		if (isReceiverRegistered) {
-			try {
-				unregisterReceiver(messageReceiver);
-			} catch (IllegalArgumentException e) {
-				Log.e(TAG, "Unable to deregister device!");
-			}
-			isReceiverRegistered = false;
-		}
-		unbindService(mConnection);
 		super.onPause();
 	}
 
@@ -187,38 +135,6 @@ public class ClassListActivity extends FragmentActivity {
 		 */
 		new FetchUserName().execute();
 	}
-
-	public void updateData(FriendInfo[] friends) {
-		if (friends != null) {
-			setFriendList(friends);
-			mClassListPagerAdapter.setCourseList(friends);
-			
-		}
-	}
-
-	public class MessageReceiver extends BroadcastReceiver {
-
-		@Override
-		public void onReceive(Context context, Intent intent) {
-
-			Log.i("Broadcast receiver ", "received a message");
-			Bundle extra = intent.getExtras();
-			if (extra != null) {
-				String action = intent.getAction();
-				if (action.equals(IMService.FRIEND_LIST_UPDATED)) {
-
-					for (FriendInfo friend : FriendController.getFriendsInfo()) {
-						System.out.println("friend: " + friend.userName
-								+ ", status: " + friend.status.ordinal());
-					}
-
-					// taking friend List from broadcast
-					ClassListActivity.this.updateData(FriendController
-							.getFriendsInfo());
-				}
-			}
-		}
-	};
 
 	public class FetchUId extends AsyncTask<String, Integer, String> {
 
@@ -303,56 +219,7 @@ public class ClassListActivity extends FragmentActivity {
 			System.out.println("Getting student id ... ");
 			new FetchUId().execute();
 
-			Thread loginThread = new Thread() {
-				private Handler handler = new Handler();
-
-				@Override
-				public void run() {
-					String result = null;
-					try {
-
-						if (mService != null) {
-							result = mService.authenticateUser("testt");
-						} else
-							System.out.println("Service is null");
-					} catch (UnsupportedEncodingException e) {
-
-						e.printStackTrace();
-					}
-					if (result == null) {
-						/*
-						 * Authentication failed, inform the user
-						 */
-						handler.post(new Runnable() {
-							public void run() {
-								Toast.makeText(getApplicationContext(),
-										"Students list is null",
-										Toast.LENGTH_SHORT).show();
-							}
-						});
-
-					} else {
-
-						/*
-						 * If authentication was successful, get the list of
-						 * other students in the class
-						 */
-						handler.post(new Runnable() {
-							public void run() {
-								Toast.makeText(
-										getApplicationContext(),
-										"Receving list of students in the class ...",
-										Toast.LENGTH_SHORT).show();
-								IntentFilter i = new IntentFilter();
-								i.addAction(IMService.FRIEND_LIST_UPDATED);
-								registerReceiver(messageReceiver, i);
-								isReceiverRegistered = true;
-							}
-						});
-					}
-				}
-			};
-			loginThread.start();
+			
 		}
 	}
 
@@ -480,19 +347,6 @@ public class ClassListActivity extends FragmentActivity {
 		}
 	}
 
-	public void setFriendList(FriendInfo[] friends) {
-		this.friends = friends;
-	}
-
-	public int getCount() {
-
-		return friends.length;
-	}
-
-	public FriendInfo getItem(int position) {
-
-		return friends[position];
-	}
 
 	public long getItemId(int position) {
 

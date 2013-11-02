@@ -12,13 +12,10 @@ public class Course implements Parcelable {
 
 	private List<Student> students;
 	
-	private List<FriendInfo> friendInfos;
-
 	private String name;
 	
 	public Course() {
 		students = new ArrayList<Student>();
-		setFriendInfos(new ArrayList<FriendInfo>());
 		setId(0);
 		setName(null);
 	}
@@ -27,7 +24,6 @@ public class Course implements Parcelable {
 		this();
 		setId(in.readInt());
 		in.readList(students, null);
-		in.readList(getFriendInfos(), null);
 		setName(in.readString());
 	}
 	
@@ -40,16 +36,7 @@ public class Course implements Parcelable {
 	public void writeToParcel(Parcel dest, int flags) {
 		dest.writeInt(getId());
 		dest.writeList(students);
-		dest.writeList(friendInfos);
 		dest.writeString(getName());
-	}
-
-	public List<FriendInfo> getFriendInfos() {
-		return friendInfos;
-	}
-
-	public void setFriendInfos(List<FriendInfo> friendInfos) {
-		this.friendInfos = friendInfos;
 	}
 
 	public static final Parcelable.Creator<Course> CREATOR = new Parcelable.Creator<Course>() {

@@ -2,14 +2,11 @@ package edu.gatech.mas;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
 import edu.gatech.mas.model.Course;
-import edu.gatech.mas.model.FriendInfo;
-import edu.gatech.mas.model.Status;
 import edu.gatech.mas.model.Student;
 
 /**

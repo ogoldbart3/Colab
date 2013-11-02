@@ -8,7 +8,6 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
 import edu.gatech.mas.model.Course;
-import edu.gatech.mas.model.FriendInfo;
 import edu.gatech.mas.model.Status;
 import edu.gatech.mas.model.Student;
 
@@ -76,17 +75,6 @@ class ClassListPagerAdapter extends FragmentStatePagerAdapter {
 	@Override
 	public CharSequence getPageTitle(int position) {
 		return courseList.get(position).getName();
-	}
-
-	void setCourseList(FriendInfo[] friends) {
-		for (Course courInfo : courseList) {
-			for (int i = 0; i < friends.length; i++) {
-				if (courInfo.getStudents().size() <= i)
-					break;
-				Student currentStudent = courInfo.getStudents().get(i);
-				currentStudent.setUsername(friends[i].userName);
-			}
-		}
 	}
 
 	void setCourseListWithStudents(List<Student> students) {

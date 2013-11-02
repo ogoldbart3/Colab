@@ -154,7 +154,7 @@ public class ClassListFragment extends Fragment {
 							StudentInfoActivity.class);
 					i.putExtra(StudentInfoActivity.USERNAME_TAG,
 							currentStudent.getUsername());
-					i.putExtra("student", currentStudent);
+					i.putExtra("receiver", currentStudent);
 					i.putExtra("user", mUser);
 					
 					startActivity(i);

@@ -10,7 +10,6 @@ import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.HttpClient;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.http.impl.client.DefaultHttpClient;
@@ -21,7 +20,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.app.Service;
-import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.IBinder;
@@ -39,7 +37,6 @@ public class ChatService extends Service {
 
 	public static final String TAKE = "Take_Message";
 	private static Timer timer = new Timer();
-	private Context ctx;
 
 	public IBinder onBind(Intent arg0) {
 		return null;
@@ -47,12 +44,11 @@ public class ChatService extends Service {
 
 	public void onCreate() {
 		super.onCreate();
-		ctx = this;
 		startService();
 	}
 
 	private void startService() {
-		timer.scheduleAtFixedRate(new mainTask(), 0, 5000);
+		timer.scheduleAtFixedRate(new mainTask(), 0, 20000);
 	}
 
 	private class mainTask extends TimerTask {
@@ -135,6 +131,7 @@ public class ChatService extends Service {
 						.getString("fromuid")));
 				newMessage.setSentTo(Integer.parseInt(jsonObject
 						.getString("touid")));
+				newMessage.setRead(Integer.parseInt(jsonObject.getString("isRead")));
 				newMessages.add(newMessage);
 			}
 			for (Message message : newMessages) {
