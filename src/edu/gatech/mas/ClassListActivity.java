@@ -192,6 +192,7 @@ public class ClassListActivity extends FragmentActivity {
 		if (friends != null) {
 			setFriendList(friends);
 			mClassListPagerAdapter.setCourseList(friends);
+			
 		}
 	}
 
@@ -296,7 +297,7 @@ public class ClassListActivity extends FragmentActivity {
 
 			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
 				ActionBar actionBar = getActionBar();
-				actionBar.setTitle(result);
+				actionBar.setTitle("Welcome " + result + "!");
 			}
 
 			System.out.println("Getting student id ... ");
@@ -444,6 +445,8 @@ public class ClassListActivity extends FragmentActivity {
 							JSONObject jsonObject = JsonArrayForResult
 									.getJSONObject(i);
 							Student student = new Student();
+							student.setUid(Integer.parseInt(jsonObject.getString("studentId")));
+							student.setUsername(jsonObject.getString("studentGt"));
 							student.setFirstName(jsonObject
 									.getString("studentFirst"));
 							student.setLastName(jsonObject
@@ -456,12 +459,6 @@ public class ClassListActivity extends FragmentActivity {
 					}
 				}
 				
-				for (Course course : mCourses) {
-					System.out.println(course.getId() + " , courseName: " + course.getName());
-					for (Student student : course.getStudents()) {
-						System.out.println("\tStudent: " + student.getFirstName() + " " + student.getLastName());
-					}
-				}
 
 			} catch (Exception e) {
 				Log.e("log_tag", "Error in http connection: " + e.toString());
@@ -472,6 +469,14 @@ public class ClassListActivity extends FragmentActivity {
 
 		@Override
 		protected void onPostExecute(Boolean result) {
+			for (Course course : mCourses) {
+				System.out.println(course.getId() + " , courseName: " + course.getName());
+				for (Student student : course.getStudents()) {
+					System.out.println("student: " + student.toString());
+				}
+			}
+			mClassListPagerAdapter.setCourseList(mCourses);
+			mClassListPagerAdapter.notifyDataSetChanged();
 		}
 	}
 

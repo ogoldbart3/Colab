@@ -4,34 +4,30 @@ import android.location.Location;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-public class Student implements Parcelable{
-	
-	private int uid; 
-	
-	private String username;
-	
-	private String firstName;
-	
-	private String lastName;
-	
-	private Status status;
-	
-	private Location location;
-	
-	private String ip;
-	
-	private String port;
+public class Student implements Parcelable {
 
-	public Student()
-	{
+	private int uid;
+
+	private String username;
+
+	private String firstName;
+
+	private String lastName;
+
+	private Status status;
+
+	private String phone;
+
+	private Location location;
+
+	public Student() {
 		uid = 0;
 		username = "";
 		location = null;
 		firstName = "";
 		lastName = "";
+		phone = "";
 		status = Status.OFFLINE;
-		ip = null;
-		port = null;
 	}
 
 	public Student(Parcel in) {
@@ -40,11 +36,10 @@ public class Student implements Parcelable{
 		username = in.readString();
 		firstName = in.readString();
 		lastName = in.readString();
-		ip = in.readString();
-		port = in.readString();
 		location = in.readParcelable(null);
+		phone = in.readString();
 	}
-	
+
 	@Override
 	public int describeContents() {
 		return 0;
@@ -56,9 +51,8 @@ public class Student implements Parcelable{
 		dest.writeString(username);
 		dest.writeString(firstName);
 		dest.writeString(lastName);
-		dest.writeString(ip);
-		dest.writeString(port);
 		dest.writeParcelable(location, flags);
+		dest.writeString(phone);
 	}
 
 	public static final Parcelable.Creator<Student> CREATOR = new Parcelable.Creator<Student>() {
@@ -78,7 +72,7 @@ public class Student implements Parcelable{
 	public void setUid(int uid) {
 		this.uid = uid;
 	}
-	
+
 	public String getUsername() {
 		return username;
 	}
@@ -95,22 +89,6 @@ public class Student implements Parcelable{
 		this.status = status;
 	}
 
-	public String getIp() {
-		return ip;
-	}
-
-	public void setIp(String ip) {
-		this.ip = ip;
-	}
-
-	public String getPort() {
-		return port;
-	}
-
-	public void setPort(String port) {
-		this.port = port;
-	}
-	
 	public Location getLocation() {
 		return location;
 	}
@@ -135,9 +113,18 @@ public class Student implements Parcelable{
 		this.firstName = firstName;
 	}
 
+	public String getPhone() {
+		return this.phone;
+	}
+
+	public void setPhone(String phone) {
+		this.phone = phone;
+	}
+
 	@Override
 	public String toString() {
-		return ("Student " + username + ", ip: " + ip + ", port: " + port + ", uid: " + uid);
+		return ("StudentId: " + uid + ", username: " + username + ", name: "
+				+ firstName + " " + lastName);
 	}
 
 }

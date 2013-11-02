@@ -23,7 +23,7 @@ class ClassListPagerAdapter extends FragmentStatePagerAdapter {
 	private List<Course> courseList;
 
 	private Student user;
-	
+
 	public ClassListPagerAdapter(FragmentManager fm) {
 		super(fm);
 		courseList = new ArrayList<Course>();
@@ -60,8 +60,12 @@ class ClassListPagerAdapter extends FragmentStatePagerAdapter {
 
 	@Override
 	public Fragment getItem(int i) {
-		System.out.println("user is: " + user);
 		return ClassListFragment.newInstance(courseList.get(i), user);
+	}
+
+	@Override
+	public int getItemPosition(Object object) {
+		return POSITION_NONE;
 	}
 
 	@Override
@@ -79,22 +83,28 @@ class ClassListPagerAdapter extends FragmentStatePagerAdapter {
 			for (int i = 0; i < friends.length; i++) {
 				if (courInfo.getStudents().size() <= i)
 					break;
-				Student currentStudent= courInfo.getStudents().get(i);
+				Student currentStudent = courInfo.getStudents().get(i);
 				currentStudent.setUsername(friends[i].userName);
-				currentStudent.setIp(friends[i].ip);
-				currentStudent.setPort(friends[i].port);
 			}
 		}
 	}
-	
-	void setCourseList(List<Course> courses)
-	{
+
+	void setCourseListWithStudents(List<Student> students) {
+		Course c = new Course();
+		c.setStudents(students);
+		courseList.set(0, c);
+	}
+
+	void setCourseList(List<Course> courses) {
 		this.courseList = courses;
 	}
-	
-	public void setUser(Student user)
-	{
+
+	public void setUser(Student user) {
 		this.user = user;
+	}
+
+	public void setStudents(List<Student> students) {
+
 	}
 
 }

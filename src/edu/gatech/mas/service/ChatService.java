@@ -1,14 +1,20 @@
 package edu.gatech.mas.service;
 
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
+import org.apache.http.NameValuePair;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -63,25 +69,28 @@ public class ChatService extends Service {
 			HttpClient mClient = new DefaultHttpClient();
 			String result = "";
 			try {
+				List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>();
+				nameValuePairs.add(new BasicNameValuePair("type", "unread"));
+				String parameterString = URLEncodedUtils.format(nameValuePairs,
+						"utf-8");
+
 				URI api = new URI(
 						"http://dev.m.gatech.edu/d/pkwiecien3/w/colab/c/api/user/"
 								+ ClassListActivity.getCurrentUser().getUid()
-								+ "/chatting/unread");
+								+ "/chat?" + parameterString);
 				HttpGet request = new HttpGet();
 				request.setURI(api);
 				request.setHeader("Cookie", ClassListActivity.getSessionName()
 						+ "=" + ClassListActivity.getSessionId());
-				System.out.println("running Cookie: "
-						+ ClassListActivity.getSessionName() + "="
-						+ ClassListActivity.getSessionId());
 
 				HttpResponse response = mClient.execute(request);
 				HttpEntity entity = response.getEntity();
 				result = EntityUtils.toString(entity);
 
-				Message message = parseMessage(result);
-				if (message != null) {
-					broadCastMessage(message);
+				ArrayList<Message> messages = parseMessage(result);
+				
+				if (messages != null && messages.size() > 0) {
+					broadCastMessage(messages);
 				}
 
 			} catch (Exception e) {
@@ -93,12 +102,14 @@ public class ChatService extends Service {
 		}
 	}
 
-	private void broadCastMessage(Message message) {
-		Intent i = new Intent(TAKE);
-		i.putExtra("test", "test");
-		i.putExtra(Message.MESSAGE_TAG, message);
-		sendBroadcast(i);
-		System.out.println("Broadcasting message: " + message.toString());
+	private void broadCastMessage(ArrayList<Message> messages) {
+		for (Message message : messages) {
+			Intent i = new Intent(TAKE);
+			i.putExtra("test", "test");
+			i.putExtra(Message.MESSAGE_TAG, message);
+			sendBroadcast(i);
+			System.out.println("Broadcasting messages: " + message.toString());	
+		}
 
 		/*
 		 * String activeFriend = FriendController.getActiveFriend(); if
@@ -108,26 +119,31 @@ public class ChatService extends Service {
 		 */
 	}
 
-	private Message parseMessage(String result) {
-		Message newMessage = new Message();
+	private ArrayList<Message> parseMessage(String result) {
+		ArrayList<Message> newMessages = new ArrayList<Message>();
 		try {
 
 			JSONArray JsonArrayForResult = new JSONArray(result);
-
 			for (int i = 0; i < JsonArrayForResult.length(); i++) {
+				Message newMessage = new Message();
 				JSONObject jsonObject = JsonArrayForResult.getJSONObject(i);
+				newMessage.setMessageId(Integer.parseInt(jsonObject
+						.getString("id")));
 				newMessage.setRead(0);
 				newMessage.setMessageText(jsonObject.getString("messagetext"));
 				newMessage.setUserId(Integer.parseInt(jsonObject
 						.getString("fromuid")));
 				newMessage.setSentTo(Integer.parseInt(jsonObject
 						.getString("touid")));
+				newMessages.add(newMessage);
 			}
-
+			for (Message message : newMessages) {
+				System.out.println("Recieved message: " + message.toString());
+			}
 		} catch (JSONException e) {
 			return null;
 		}
-		return newMessage;
+		return newMessages;
 	}
 
 	public void onDestroy() {

@@ -34,6 +34,11 @@ public class ClassListFragment extends Fragment {
 	{
 		return mCourse;
 	}
+	
+	public Course setCourse()
+	{
+		return mCourse;
+	}
 
 	/**
 	 * Helper class that converts dp to px.

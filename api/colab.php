@@ -179,6 +179,11 @@
 		$dbQuery = sprintf("SELECT studentFirst, studentLast, studentId FROM student WHERE studentId IN
 			(SELECT studentId FROM studentCourseMapping WHERE courseId=" . $courseId . ") ORDER BY studentFirst ASC");
 
+			/*
+			
+		$dbQuery = sprintf("SELECT studentId, studentFirst, studentLast, studentGt, studentPhone, location, status FROM student WHERE studentId IN
+			(SELECT studentId FROM studentCourseMapping WHERE courseId=" . $courseId . ") ORDER BY studentFirst ASC");
+			*/
 		$result = getDBResultsArray($dbQuery);
 		
 		header("Content-type: application/json");

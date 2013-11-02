@@ -77,8 +77,7 @@ public class StudentInfoActivity extends Activity {
 
 		mPrivateChatButton = (Button) findViewById(R.id.private_chat_button);
 		mPrivateChatButton
-				.setText("Chat with " + mStudent.getUsername() + ", port: "
-						+ mStudent.getPort() + ", ip: " + mStudent.getIp());
+				.setText("Chat with " + mStudent.toString());
 		mPrivateChatButton.setOnClickListener(new OnClickListener() {
 
 			@Override
@@ -101,8 +100,8 @@ public class StudentInfoActivity extends Activity {
 									Messaging.class);
 							i.putExtra(FriendInfo.USERNAME,
 									mStudent.getUsername());
-							i.putExtra(FriendInfo.PORT, mStudent.getPort());
-							i.putExtra(FriendInfo.IP, mStudent.getIp());
+							i.putExtra(FriendInfo.PORT, 0);
+							i.putExtra(FriendInfo.IP, 0);
 							i.putExtra("student", mStudent);
 							i.putExtra("user", mUser);
 							startActivity(i);
