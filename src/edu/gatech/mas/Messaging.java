@@ -28,7 +28,6 @@ import android.content.IntentFilter;
 import android.database.Cursor;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Handler;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -45,12 +44,6 @@ public class Messaging extends Activity {
 
 	private static final int MESSAGE_CANNOT_BE_SENT = 0;
 	public Student mUser = null;
-
-	private static int receiverId = 4; // TODO change for real data
-
-	public static int getReceiverId() {
-		return receiverId;
-	}
 
 	public Student mReceiver = null;
 	public String username;
@@ -80,17 +73,7 @@ public class Messaging extends Activity {
 		mReceiver = extras.getParcelable("receiver");
 		String msg = "";
 
-		if (mReceiver != null) {
-			System.out.println("user is not null in messaging: "
-					+ mReceiver.getUid() + ", username: "
-					+ mReceiver.getUsername());
-		} else
-			System.out.println("user is null in messaging!");
-
-		setTitle("Messaging with " + mReceiver.getUsername());
-		// EditText friendUserName = (EditText)
-		// findViewById(R.id.friendUserName);
-		// friendUserName.setText(friend.userName);
+		setTitle("Messaging with " + mReceiver.getFirstName());
 
 		localstoragehandler = new LocalStorageHandler(this);
 		dbCursor = localstoragehandler.get(mUser.getUsername(),
@@ -103,20 +86,24 @@ public class Messaging extends Activity {
 					&& noOfScorer < dbCursor.getCount()) {
 				noOfScorer++;
 
-				this.appendToMessageHistory(dbCursor.getString(2),
-						dbCursor.getString(3));
+				if (dbCursor.getString(2).equals(mUser.getUsername()))
+					this.appendToMessageHistory(mUser.getFirstName(),
+							dbCursor.getString(3));
+				else
+					this.appendToMessageHistory(mReceiver.getFirstName(),
+							dbCursor.getString(3));
+
 				dbCursor.moveToNext();
 			}
 		}
 		localstoragehandler.close();
 
-		if (msg != null) {
-			this.appendToMessageHistory(mReceiver.getUsername(), msg);
+		if (msg != null && msg != "") {
+			this.appendToMessageHistory(mReceiver.getFirstName(), msg);
 		}
 
 		sendMessageButton.setOnClickListener(new OnClickListener() {
 			CharSequence message;
-			Handler handler = new Handler();
 
 			public void onClick(View arg0) {
 				message = messageText.getText();
@@ -147,7 +134,7 @@ public class Messaging extends Activity {
 			int messageId = params[0];
 			HttpClient httpClient = new DefaultHttpClient();
 			String api = "http://dev.m.gatech.edu/d/pkwiecien3/w/colab/c/api/user/4/chat/"
-					+ receiverId;
+					+ mReceiver.getUid();
 
 			try {
 				// Add your data
@@ -163,10 +150,7 @@ public class Messaging extends Activity {
 				httppost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
 
 				// Execute HTTP Post Request
-				HttpResponse response = httpClient.execute(httppost);
-				HttpEntity entity = response.getEntity();
-				String result = EntityUtils.toString(entity);
-				System.out.println("Updating " + messageId);
+				httpClient.execute(httppost);
 			} catch (ClientProtocolException e) {
 				e.printStackTrace();
 			} catch (IOException e) {
@@ -221,6 +205,8 @@ public class Messaging extends Activity {
 		@Override
 		protected void onPostExecute(String result) {
 			appendToMessageHistory(mUser.getFirstName(), result);
+			localstoragehandler.insert(mUser.getUsername(),
+					mUser.getUsername(), result);
 		}
 	}
 
@@ -269,16 +255,13 @@ public class Messaging extends Activity {
 		@Override
 		public void onReceive(Context context, Intent intent) {
 			Bundle extra = intent.getExtras();
-			String test = extra.getString("test");
-			System.out.println("Receving message" + test);
 			Message message = extra.getParcelable(Message.MESSAGE_TAG);
 			if (message != null && message.isRead() == 0) {
 				new MarkAsReadInDb().execute(message.getMessageId());
 
 				if (mUser.getUid() == message.getSentTo()) {
-					System.out.println("Message: " + message.toString());
 
-					appendToMessageHistory("User " + message.getUserId(),
+					appendToMessageHistory(mReceiver.getFirstName(),
 							message.getMessageText());
 					localstoragehandler.insert(mUser.getUsername(),
 							mUser.getUsername(), message.getMessageText());

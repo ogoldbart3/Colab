@@ -5,10 +5,12 @@ import android.content.res.Resources;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.util.TypedValue;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
@@ -27,16 +29,14 @@ public class ClassListFragment extends Fragment {
 	TableLayout tableLayout;
 
 	private Student mUser;
-	
+
 	private Course mCourse;
-	
-	public Course getCourse()
-	{
+
+	public Course getCourse() {
 		return mCourse;
 	}
-	
-	public Course setCourse()
-	{
+
+	public Course setCourse() {
 		return mCourse;
 	}
 
@@ -83,19 +83,11 @@ public class ClassListFragment extends Fragment {
 		View rootView = inflater.inflate(R.layout.activity_fragment, container,
 				false);
 
-		if (mCourse != null && mUser != null)
-			System.out.println("Now: " + mCourse.getName() + " and students "
-					+ mCourse.getStudents().size() + ", and student: " + mUser.getUsername() + ", uid: " + mUser.getUid());
-		else
-			System.out.println("Saved instance is null (mCourse)");
-
 		tableLayout = (TableLayout) rootView.findViewById(R.id.tableLayout1);
 
 		for (int i = 0; i < mCourse.getStudents().size(); i++) {
 
 			final Student currentStudent = mCourse.getStudents().get(i);
-
-			System.out.println(i + ": " + currentStudent.toString() + ", id: " + currentStudent.getUid());
 
 			// Create row
 			final TableRow tableRow = new TableRow(getActivity());
@@ -122,14 +114,37 @@ public class ClassListFragment extends Fragment {
 
 			// Creation textView
 			final TextView student = new TextView(getActivity());
-			student.setText(currentStudent.getUsername());
+			String name = currentStudent.getFirstName() + " "
+					+ currentStudent.getLastName();
+			if (name.length() > 15)
+				name = name.substring(0, 15);
+			student.setText(name);
 			student.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 20);
 			student.setLayoutParams(tableParams2);
 
-			final TextView status = new TextView(getActivity());
-			status.setText("Status");
-			status.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 20);
-			status.setLayoutParams(tableParams);
+			TableRow.LayoutParams tableParams3 = new TableRow.LayoutParams(20,
+					20, 4);
+
+			ImageView statusImage = new ImageView(getActivity());
+			switch (currentStudent.getStatus()) {
+			case ONLINE:
+				statusImage.setImageResource(R.drawable.status_online);
+				break;
+			case AWAY:
+				statusImage.setImageResource(R.drawable.status_away);
+				break;
+			default:
+				statusImage.setImageResource(R.drawable.status_offline);
+				break;
+			}
+			statusImage.setLayoutParams(tableParams3);
+
+			/*
+			 * final TextView status = new TextView(getActivity());
+			 * status.setText("Status");
+			 * status.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 20);
+			 * status.setLayoutParams(tableParams);
+			 */
 
 			final TextView distance = new TextView(getActivity());
 			distance.setText("Distance");
@@ -141,8 +156,9 @@ public class ClassListFragment extends Fragment {
 			map.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 20);
 			map.setLayoutParams(tableParams);
 
+			tableRow.setGravity(Gravity.CENTER);
 			tableRow.addView(student);
-			tableRow.addView(status);
+			tableRow.addView(statusImage);
 			tableRow.addView(distance);
 			tableRow.addView(map);
 
@@ -156,7 +172,7 @@ public class ClassListFragment extends Fragment {
 							currentStudent.getUsername());
 					i.putExtra("receiver", currentStudent);
 					i.putExtra("user", mUser);
-					
+
 					startActivity(i);
 				}
 			});
@@ -168,17 +184,16 @@ public class ClassListFragment extends Fragment {
 
 	public void displayRow() {
 
-		if(tableLayout != null) {
+		if (tableLayout != null) {
 			System.out.println("table lauout is not null");
-			
-		}
-		else System.out.println("table layout is null");
-		
-		if(mCourse !=null)
+
+		} else
+			System.out.println("table layout is null");
+
+		if (mCourse != null)
 			System.out.println(mCourse.getName());
 		else
 			System.out.println("mCourse is null");
 	}
 
-	
 }

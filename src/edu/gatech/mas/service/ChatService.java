@@ -48,7 +48,7 @@ public class ChatService extends Service {
 	}
 
 	private void startService() {
-		timer.scheduleAtFixedRate(new mainTask(), 0, 20000);
+		timer.scheduleAtFixedRate(new mainTask(), 0, 5000);
 	}
 
 	private class mainTask extends TimerTask {
@@ -101,7 +101,6 @@ public class ChatService extends Service {
 	private void broadCastMessage(ArrayList<Message> messages) {
 		for (Message message : messages) {
 			Intent i = new Intent(TAKE);
-			i.putExtra("test", "test");
 			i.putExtra(Message.MESSAGE_TAG, message);
 			sendBroadcast(i);
 			System.out.println("Broadcasting messages: " + message.toString());	
