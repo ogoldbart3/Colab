@@ -19,6 +19,8 @@ public class Student implements Parcelable {
 	private String phone;
 
 	private Location location;
+	
+	private String about;
 
 	public Student() {
 		uid = 0;
@@ -28,6 +30,7 @@ public class Student implements Parcelable {
 		lastName = "";
 		phone = "";
 		status = Status.OFFLINE;
+		about = "";
 	}
 
 	public Student(Parcel in) {
@@ -36,8 +39,11 @@ public class Student implements Parcelable {
 		username = in.readString();
 		firstName = in.readString();
 		lastName = in.readString();
+		status = (Status) in.readParcelable(Status.class.getClassLoader());
 		location = in.readParcelable(null);
+//		location = Location.CREATOR.createFromParcel(in);
 		phone = in.readString();
+		about = in.readString();
 	}
 
 	@Override
@@ -51,8 +57,10 @@ public class Student implements Parcelable {
 		dest.writeString(username);
 		dest.writeString(firstName);
 		dest.writeString(lastName);
+		dest.writeParcelable(status, flags);
 		dest.writeParcelable(location, flags);
 		dest.writeString(phone);
+		dest.writeString(about);
 	}
 
 	public static final Parcelable.Creator<Student> CREATOR = new Parcelable.Creator<Student>() {
@@ -121,6 +129,13 @@ public class Student implements Parcelable {
 		this.phone = phone;
 	}
 
+	public String getAbout() {
+		return about;
+	}
+	
+	public void setAbout(String about) {
+		this.about = about;
+	}
 	@Override
 	public String toString() {
 		return ("StudentId: " + uid + ", username: " + username + ", name: "

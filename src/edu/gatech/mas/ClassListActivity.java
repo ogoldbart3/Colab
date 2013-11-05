@@ -16,6 +16,7 @@ import org.json.JSONObject;
 import android.annotation.TargetApi;
 import android.app.ActionBar;
 import android.content.Intent;
+import android.location.Location;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -50,11 +51,13 @@ public class ClassListActivity extends FragmentActivity {
 	private ViewPager mViewPager;
 
 	private Button mLocationButton;
+	private Button mStatusButton;
+	private Button mChatButton;
 
 	private DefaultHttpClient mClient;
 
 	private static Student mUser;
-	
+
 	private static List<Course> mCourses = new ArrayList<Course>();
 
 	private static String sessionName;
@@ -98,6 +101,22 @@ public class ClassListActivity extends FragmentActivity {
 								GPSLocationService.class));
 			}
 		});
+
+		mStatusButton = (Button) findViewById(R.id.chooseStatusButton);
+		mStatusButton.setOnClickListener(new OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+				mStatusButton.setText("test");
+				System.out.println(R.string.status_online);
+				if (mStatusButton.getText().equals("Status: offline"))
+					mStatusButton.setText("Status: online");
+				else
+					mStatusButton.setText("Status: offline");
+
+			}
+		});
+
 		/**
 		 * TODO: add notifications about incoming new messages to chat service
 		 */
@@ -128,10 +147,11 @@ public class ClassListActivity extends FragmentActivity {
 	public static String getSessionId() {
 		return sessionId;
 	}
+
 	public static Student getCurrentUser() {
 		return mUser;
 	}
-	
+
 	public class FetchUserName extends AsyncTask<String, Integer, String> {
 
 		@Override
@@ -182,10 +202,9 @@ public class ClassListActivity extends FragmentActivity {
 				actionBar.setTitle("Hello " + mUser.getFirstName() + "!");
 			}
 
-			if (!alreadyFetched)
-				new FetchCourses().execute();
-			else
+			if (alreadyFetched)
 				mClassListPagerAdapter.notifyDataSetChanged();
+			new FetchCourses().execute();
 
 		}
 	}
@@ -209,6 +228,7 @@ public class ClassListActivity extends FragmentActivity {
 				HttpResponse response = mClient.execute(request);
 				HttpEntity entity = response.getEntity();
 				String str = EntityUtils.toString(entity);
+				List<Course> courses = new ArrayList<Course>();
 				try {
 
 					JSONArray JsonArrayForResult = new JSONArray(str);
@@ -220,9 +240,9 @@ public class ClassListActivity extends FragmentActivity {
 						course.setName(jsonObject.getString("courseName"));
 						course.setId(Integer.valueOf(jsonObject
 								.getString("courseId")));
-						mCourses.add(course);
+						courses.add(course);
 					}
-
+					mCourses = courses;
 				} catch (JSONException e) {
 					e.printStackTrace();
 				}
@@ -280,20 +300,26 @@ public class ClassListActivity extends FragmentActivity {
 									.getString("studentFirst"));
 							student.setLastName(jsonObject
 									.getString("studentLast"));
-							student.setPhone(jsonObject.getString("studentPhone"));
-							
-							switch(Integer.parseInt(jsonObject.getString("status")))
-							{
-								case 2: 
-									student.setStatus(edu.gatech.mas.model.Status.AWAY);
-									break;
-								case 1:
-									student.setStatus(edu.gatech.mas.model.Status.ONLINE);
-									break;
-								default:
-									student.setStatus(edu.gatech.mas.model.Status.OFFLINE);
-									break;
+							student.setPhone(jsonObject
+									.getString("studentPhone"));
+							student.setAbout(jsonObject.getString("aboutMe"));
+
+							switch (Integer.parseInt(jsonObject
+									.getString("status"))) {
+							case 2:
+								student.setStatus(edu.gatech.mas.model.Status.AWAY);
+								break;
+							case 1:
+								student.setStatus(edu.gatech.mas.model.Status.ONLINE);
+								break;
+							default:
+								student.setStatus(edu.gatech.mas.model.Status.OFFLINE);
+								break;
 							}
+							Location loc = new Location("dummyProvider");
+							loc.setLatitude(33.77);
+							loc.setLongitude(-84.38);
+							student.setLocation(loc);
 							studentsArray.add(student);
 						}
 						course.setStudents(studentsArray);
@@ -316,6 +342,5 @@ public class ClassListActivity extends FragmentActivity {
 			alreadyFetched = true;
 		}
 	}
-
 
 }

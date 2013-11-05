@@ -77,7 +77,7 @@ public class Messaging extends Activity {
 
 		localstoragehandler = new LocalStorageHandler(this);
 		dbCursor = localstoragehandler.get(mUser.getUsername(),
-				mUser.getUsername());
+				mReceiver.getUsername());
 
 		if (dbCursor.getCount() > 0) {
 			int noOfScorer = 0;
@@ -204,9 +204,9 @@ public class Messaging extends Activity {
 
 		@Override
 		protected void onPostExecute(String result) {
-			appendToMessageHistory(mUser.getFirstName(), result);
 			localstoragehandler.insert(mUser.getUsername(),
-					mUser.getUsername(), result);
+					mReceiver.getUsername(), result);
+			appendToMessageHistory(mUser.getFirstName(), result);
 		}
 	}
 
@@ -256,6 +256,7 @@ public class Messaging extends Activity {
 		public void onReceive(Context context, Intent intent) {
 			Bundle extra = intent.getExtras();
 			Message message = extra.getParcelable(Message.MESSAGE_TAG);
+
 			if (message != null && message.isRead() == 0) {
 				new MarkAsReadInDb().execute(message.getMessageId());
 

@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
+import android.widget.TextView;
 import edu.gatech.mas.model.Student;
 
 public class StudentInfoActivity extends Activity {
@@ -14,6 +15,10 @@ public class StudentInfoActivity extends Activity {
 	private Button mPrivateChatButton;
 	private Student mStudent;
 	private Student mUser;
+	private TextView nameTextView;
+	private TextView statusTextView;
+	private TextView distanceTextView;
+	private TextView aboutTextView;
 
 
 	public long getItemId(int position) {
@@ -32,7 +37,7 @@ public class StudentInfoActivity extends Activity {
 
 		mPrivateChatButton = (Button) findViewById(R.id.private_chat_button);
 		mPrivateChatButton
-				.setText("Chat with " + mStudent.toString());
+				.setText("Chat with " + mStudent.getFirstName());
 		mPrivateChatButton.setOnClickListener(new OnClickListener() {
 
 			@Override
@@ -44,6 +49,30 @@ public class StudentInfoActivity extends Activity {
 				startActivity(i);
 			}
 		});
+		
+		nameTextView = (TextView) findViewById(R.id.studentNameLabel);
+		nameTextView.setText(mStudent.getFirstName() + " " + mStudent.getLastName());
+		
+		statusTextView = (TextView) findViewById(R.id.studentStatusLabel);
+		switch(mStudent.getStatus())
+		{
+		case ONLINE:
+			statusTextView.setText("Online");
+			break;
+		case AWAY:
+			statusTextView.setText("Away");
+			break;
+		default:
+			statusTextView.setText("Offline");
+			break;
+		}
+		
+		distanceTextView = (TextView) findViewById(R.id.studentDistanceLabel);
+		if(mStudent.getLocation() != null) // here we should compute the disctance
+			distanceTextView.setText("On Campus");
+		
+		aboutTextView = (TextView) findViewById(R.id.studentAboutLabel);
+		aboutTextView.setText(mStudent.getAbout());
 	}
 
 	@Override

@@ -7,8 +7,9 @@
     <string name="email_id">GT Email/ID</string>
     <string name="password">Password</string>
     <string name="your_classes">Your classes</string>
-    <string name="enable_location">Location: Disabled</string>
-    <string name="choose_status">Status: Offline</string>
+    <string name="enable_location">Check-in</string>
+    <string name="status_online">Status: Online</string>
+    <string name="status_offline">Status: Offline</string>
     <string name="group_chat">Group Chat</string>
     <string name="local_service_started">Local service started</string>
     <string name="local_service_stopped">Local service stopped</string>
@@ -18,4 +19,8 @@
     <string name="OK">OK</string>
     <string name="georgia_tech_colab_app">Georgia Tech - Colab App</string>
     <string name="login_here_button">Login here</string>
+    <string name="about_student">About:</string>
+    <string name="distance_student">Distance:</string>
+    <string name="status_student">Status:</string>
+    <string name="name_student">Name:</string>
 </resources>

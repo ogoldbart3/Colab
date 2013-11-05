@@ -125,16 +125,24 @@ public class ClassListFragment extends Fragment {
 			TableRow.LayoutParams tableParams3 = new TableRow.LayoutParams(20,
 					20, 4);
 
+
+			final TextView distance = new TextView(getActivity());
+			distance.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 20);
+			distance.setLayoutParams(tableParams);
+			
 			ImageView statusImage = new ImageView(getActivity());
 			switch (currentStudent.getStatus()) {
 			case ONLINE:
 				statusImage.setImageResource(R.drawable.status_online);
+				distance.setText("On campus");
 				break;
 			case AWAY:
 				statusImage.setImageResource(R.drawable.status_away);
+				distance.setText("On campus");
 				break;
 			default:
 				statusImage.setImageResource(R.drawable.status_offline);
+				distance.setText("Off campus");
 				break;
 			}
 			statusImage.setLayoutParams(tableParams3);
@@ -146,11 +154,6 @@ public class ClassListFragment extends Fragment {
 			 * status.setLayoutParams(tableParams);
 			 */
 
-			final TextView distance = new TextView(getActivity());
-			distance.setText("Distance");
-			distance.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 20);
-			distance.setLayoutParams(tableParams);
-
 			final TextView map = new TextView(getActivity());
 			map.setText("Map");
 			map.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 20);
@@ -160,7 +163,7 @@ public class ClassListFragment extends Fragment {
 			tableRow.addView(student);
 			tableRow.addView(statusImage);
 			tableRow.addView(distance);
-			tableRow.addView(map);
+//			tableRow.addView(map);
 
 			tableRow.setOnClickListener(new OnClickListener() {
 
