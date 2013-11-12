@@ -51,7 +51,7 @@ public class ChatService extends Service {
 	}
 
 	private void startService() {
-		mTimer.scheduleAtFixedRate(new mainTask(), 0, 5000);
+		mTimer.scheduleAtFixedRate(new mainTask(), 5000, 5000);
 	}
 
 	private class mainTask extends TimerTask {

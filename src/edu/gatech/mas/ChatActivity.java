@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.database.Cursor;
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.view.KeyEvent;
 import android.view.View;
@@ -202,8 +203,10 @@ public class ChatActivity extends Activity implements IChatCallback {
 
 	public void appendToMessageHistory(String username, String message) {
 		if (username != null && message != null) {
+			mMessageHistoryText.setTypeface(null, Typeface.BOLD);
 			mMessageHistoryText.append(username + ":\n");
-			mMessageHistoryText.append(message + "\n");
+			mMessageHistoryText.setTypeface(null, Typeface.NORMAL);
+			mMessageHistoryText.append(message + "\n\n");
 		}
 	}
 
