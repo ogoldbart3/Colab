@@ -3,14 +3,30 @@ package edu.gatech.mas.model;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+/**
+ * Model object for a chat message. Contains message text, sender id, receiver
+ * id, etc.
+ * 
+ * @author Pawel
+ * 
+ */
 public class Message implements Parcelable {
 
 	public static final String MESSAGE_TAG = "message";
 
+	/** Unique id of the message */
 	private int messageId;
-	private int userId;
-	private int sentTo;
+
+	/** User id of the sender */
+	private int senderId;
+	
+	/** User id of the receiver */
+	private int receiverId;
+	
+	/** Content of chat message */
 	private String messageText;
+	
+	/** Flag indicating if the message has been already read */
 	private int isRead;
 
 	@Override
@@ -21,8 +37,8 @@ public class Message implements Parcelable {
 	@Override
 	public void writeToParcel(Parcel dest, int flags) {
 		dest.writeInt(messageId);
-		dest.writeInt(userId);
-		dest.writeInt(sentTo);
+		dest.writeInt(senderId);
+		dest.writeInt(receiverId);
 		dest.writeString(messageText);
 		dest.writeInt(isRead);
 	}
@@ -30,16 +46,16 @@ public class Message implements Parcelable {
 	private Message(Parcel in) {
 		this();
 		this.messageId = in.readInt();
-		this.userId = in.readInt();
-		this.sentTo = in.readInt();
+		this.senderId = in.readInt();
+		this.receiverId = in.readInt();
 		this.messageText = in.readString();
 		this.isRead = in.readInt();
 	}
 
 	public Message() {
 		this.messageId = 0;
-		this.userId = 0;
-		this.sentTo = 0;
+		this.senderId = 0;
+		this.receiverId = 0;
 		this.messageText = "";
 		this.isRead = 0;
 	}
@@ -55,8 +71,8 @@ public class Message implements Parcelable {
 	};
 
 	public String toString() {
-		return new String("Message: " + messageText + ", from: " + userId
-				+ ", to: " + sentTo);
+		return new String("Message: " + messageText + ", from: " + senderId
+				+ ", to: " + receiverId);
 	}
 
 	public int getMessageId() {
@@ -66,21 +82,21 @@ public class Message implements Parcelable {
 	public void setMessageId(int messageId) {
 		this.messageId = messageId;
 	};
-	
+
 	public int getUserId() {
-		return userId;
+		return senderId;
 	}
 
 	public void setUserId(int userId) {
-		this.userId = userId;
+		this.senderId = userId;
 	}
 
 	public int getSentTo() {
-		return sentTo;
+		return receiverId;
 	}
 
 	public void setSentTo(int sentTo) {
-		this.sentTo = sentTo;
+		this.receiverId = sentTo;
 	}
 
 	public String getMessageText() {

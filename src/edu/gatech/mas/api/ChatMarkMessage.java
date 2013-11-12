@@ -14,10 +14,15 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
 
-import android.content.Context;
 import android.os.AsyncTask;
 import edu.gatech.mas.ClassListActivity;
 
+/**
+ * AsyncTask responsible for marking in MySQL DB a chat message that was read
+ * locally by receiver.
+ * 
+ * @author Pawel
+ */
 public class ChatMarkMessage extends AsyncTask<Integer, Integer, Boolean> {
 
 	@Override
@@ -26,8 +31,8 @@ public class ChatMarkMessage extends AsyncTask<Integer, Integer, Boolean> {
 		int uid = params[1];
 		int receiverId = params[2];
 		HttpClient httpClient = new DefaultHttpClient();
-		String api = "http://dev.m.gatech.edu/d/pkwiecien3/w/colab/c/api/user/"+uid+"/chat/"+
-				+ receiverId;
+		String api = "http://dev.m.gatech.edu/d/pkwiecien3/w/colab/c/api/user/"
+				+ uid + "/chat/" + +receiverId;
 
 		try {
 			// Add your data

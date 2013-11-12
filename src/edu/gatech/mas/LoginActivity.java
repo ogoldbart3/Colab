@@ -8,13 +8,16 @@ import android.view.Menu;
 import android.view.View;
 
 /**
- * This activity is responsible for user authentication, it is integrated with
- * the central authentication service (CAS) from Georgia Tech (so that our users
- * - students, don't have to register, but to use our app can simply use their
- * Georgia Tech credentials. There's no API to CAS, it does the authenticaion
- * only through the browser. So the idea is with the launch of application
- * automaticaly open browser with page with CAS login, and if successful get a
- * session ticket from the browsers.
+ * This activity is a start activity and it is responsible for user
+ * authentication. It is integrated with the central authentication service
+ * (CAS) from Georgia Tech (so that our users - students, don't have to
+ * register, but can simply use their Georgia Tech credentials). CAS doesn't
+ * have API, it does the authentication only through the browser. So here after
+ * user launches the app and presses login button, the browser is automatically
+ * opened with page with CAS login. After successful authentication, CAS issues
+ * session id, which is returned to our app. This session id is used during
+ * usage of the app, especially during calls to our API that requires CAS
+ * session id. 
  * 
  * @author Pawel
  * 

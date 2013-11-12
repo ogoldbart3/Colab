@@ -24,35 +24,14 @@ import edu.gatech.mas.model.Student;
  */
 public class ClassListFragment extends Fragment {
 
-	public static final String ARG_OBJECT = "object";
-	public static String testString = "TestString";
-	TableLayout tableLayout;
+	/** Table that will be dynamically updated with students of a class */
+	private TableLayout tableLayout;
 
+	/** User of the app */
 	private Student mUser;
 
+	/** Specific class of the user */
 	private Course mCourse;
-
-	public Course getCourse() {
-		return mCourse;
-	}
-
-	public Course setCourse() {
-		return mCourse;
-	}
-
-	/**
-	 * Helper class that converts dp to px.
-	 * 
-	 * @param dpValue
-	 *            value in dp
-	 * @return value in px
-	 */
-	private int convertDpToPx(float dpValue) {
-		Resources r = getActivity().getResources();
-		int px = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
-				dpValue, r.getDisplayMetrics());
-		return px;
-	}
 
 	static ClassListFragment newInstance(Course course, Student user) {
 		ClassListFragment c = new ClassListFragment();
@@ -73,7 +52,6 @@ public class ClassListFragment extends Fragment {
 			mCourse = getArguments().getParcelable("course");
 			mUser = getArguments().getParcelable("user");
 		}
-
 	}
 
 	@Override
@@ -85,6 +63,7 @@ public class ClassListFragment extends Fragment {
 
 		tableLayout = (TableLayout) rootView.findViewById(R.id.tableLayout1);
 
+		// Create pragmatically a table with students of the class
 		for (int i = 0; i < mCourse.getStudents().size(); i++) {
 
 			final Student currentStudent = mCourse.getStudents().get(i);
@@ -108,10 +87,6 @@ public class ClassListFragment extends Fragment {
 					TableLayout.LayoutParams.WRAP_CONTENT,
 					TableLayout.LayoutParams.WRAP_CONTENT, 1);
 
-			TableRow.LayoutParams tableParams2 = new TableRow.LayoutParams(
-					TableLayout.LayoutParams.WRAP_CONTENT,
-					TableLayout.LayoutParams.WRAP_CONTENT, 4);
-
 			// Creation textView
 			final TextView student = new TextView(getActivity());
 			String name = currentStudent.getFirstName() + " "
@@ -120,22 +95,21 @@ public class ClassListFragment extends Fragment {
 				name = name.substring(0, 15);
 			student.setText(name);
 			student.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 20);
-			student.setLayoutParams(tableParams2);
-
-			TableRow.LayoutParams tableParams3 = new TableRow.LayoutParams(20,
-					20, 4);
+			student.setLayoutParams(new TableRow.LayoutParams(
+					TableLayout.LayoutParams.WRAP_CONTENT,
+					TableLayout.LayoutParams.WRAP_CONTENT, 4));
 
 			final TextView distance = new TextView(getActivity());
 			distance.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 20);
 			distance.setLayoutParams(tableParams);
-			
+
 			ImageView statusImage = new ImageView(getActivity());
 			switch (currentStudent.getStatus()) {
-			case ONLINE:
+			case Online:
 				statusImage.setImageResource(R.drawable.status_online);
 				distance.setText("On campus");
 				break;
-			case AWAY:
+			case Away:
 				statusImage.setImageResource(R.drawable.status_away);
 				distance.setText("On campus");
 				break;
@@ -144,7 +118,7 @@ public class ClassListFragment extends Fragment {
 				distance.setText("Off campus");
 				break;
 			}
-			statusImage.setLayoutParams(tableParams3);
+			statusImage.setLayoutParams(new TableRow.LayoutParams(20, 20, 4));
 
 			final TextView map = new TextView(getActivity());
 			map.setText("Map");
@@ -155,7 +129,6 @@ public class ClassListFragment extends Fragment {
 			tableRow.addView(student);
 			tableRow.addView(statusImage);
 			tableRow.addView(distance);
-//			tableRow.addView(map);
 
 			tableRow.setOnClickListener(new OnClickListener() {
 
@@ -177,18 +150,18 @@ public class ClassListFragment extends Fragment {
 		return rootView;
 	}
 
-	public void displayRow() {
-
-		if (tableLayout != null) {
-			System.out.println("table lauout is not null");
-
-		} else
-			System.out.println("table layout is null");
-
-		if (mCourse != null)
-			System.out.println(mCourse.getName());
-		else
-			System.out.println("mCourse is null");
+	/**
+	 * Helper class that converts dp to px.
+	 * 
+	 * @param dpValue
+	 *            value in dp
+	 * @return value in px
+	 */
+	private int convertDpToPx(float dpValue) {
+		Resources r = getActivity().getResources();
+		int px = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
+				dpValue, r.getDisplayMetrics());
+		return px;
 	}
 
 }

@@ -22,20 +22,28 @@ import edu.gatech.mas.ClassListActivity;
 import edu.gatech.mas.model.Course;
 import edu.gatech.mas.model.Student;
 
+/**
+ * AsyncTask responsible for getting a list of students for each class of
+ * current user of the app.
+ * 
+ * @author Pawel
+ * 
+ */
 public class ClassGetStudents extends AsyncTask<String, Integer, List<Course>> {
-	
+
+	/** Callback activity */
 	private IClassCallback mCallback;
+
+	/** Courses of the current user	 */
+	List<Course> mCourses = new ArrayList<Course>();
 
 	public ClassGetStudents(IClassCallback callback) {
 		mCallback = callback;
 	}
-	
-	List<Course> courses = new ArrayList<Course>();
-	
+
 	@Override
 	protected List<Course> doInBackground(String... params) {
 
-		
 		HttpClient mClient = new DefaultHttpClient();
 
 		String userId = params[0];
@@ -45,12 +53,13 @@ public class ClassGetStudents extends AsyncTask<String, Integer, List<Course>> {
 		List<Course> resultCourses = new LinkedList<Course>();
 		try {
 			HttpGet request = new HttpGet();
-			for (Course course : courses) {
+			for (Course course : mCourses) {
 				String finalUrl = apiCourses + course.getId() + "/friend";
 				URI finalAPI = new URI(finalUrl);
 
 				request.setURI(finalAPI);
-				request.setHeader("Cookie", ClassListActivity.getSessionName() + "=" + ClassListActivity.getSessionId());
+				request.setHeader("Cookie", ClassListActivity.getSessionName()
+						+ "=" + ClassListActivity.getSessionId());
 
 				HttpResponse response = mClient.execute(request);
 				HttpEntity entity = response.getEntity();
@@ -76,15 +85,17 @@ public class ClassGetStudents extends AsyncTask<String, Integer, List<Course>> {
 						switch (Integer
 								.parseInt(jsonObject.getString("status"))) {
 						case 2:
-							student.setStatus(edu.gatech.mas.model.Status.AWAY);
+							student.setStatus(edu.gatech.mas.model.Status.Away);
 							break;
 						case 1:
-							student.setStatus(edu.gatech.mas.model.Status.ONLINE);
+							student.setStatus(edu.gatech.mas.model.Status.Online);
 							break;
 						default:
-							student.setStatus(edu.gatech.mas.model.Status.OFFLINE);
+							student.setStatus(edu.gatech.mas.model.Status.Offline);
 							break;
 						}
+						// TODO Pawel: after Amy is done with persistence of
+						// user location, change this dummy values
 						Location loc = new Location("dummyProvider");
 						loc.setLatitude(33.77);
 						loc.setLongitude(-84.38);
@@ -106,11 +117,10 @@ public class ClassGetStudents extends AsyncTask<String, Integer, List<Course>> {
 
 	@Override
 	protected void onPostExecute(List<Course> result) {
-		mCallback.setStudentsForCourse(result);
+		mCallback.updateCoursesWithStudents(result);
 	}
 
-
 	public void setCourses(List<Course> mCourses) {
-		this.courses = mCourses;
+		this.mCourses = mCourses;
 	}
 }

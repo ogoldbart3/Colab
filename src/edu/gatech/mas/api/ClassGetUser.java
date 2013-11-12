@@ -12,14 +12,21 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.annotation.TargetApi;
-import android.app.ActionBar;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.util.Log;
 import edu.gatech.mas.ClassListActivity;
 import edu.gatech.mas.model.Student;
 
+/**
+ * AsyncTask responsible for getting a information about current user of the app.
+ * 
+ * @author Pawel
+ * 
+ */
 public class ClassGetUser extends AsyncTask<String, Integer, Student> {
+	
+	/** Callback activity */
 	private IClassCallback mCallback;
 
 	public ClassGetUser(IClassCallback callback) {
@@ -68,6 +75,6 @@ public class ClassGetUser extends AsyncTask<String, Integer, Student> {
 	@TargetApi(Build.VERSION_CODES.HONEYCOMB)
 	@Override
 	protected void onPostExecute(Student result) {
-		mCallback.setUserInfo(result);
+		mCallback.setUser(result);
 	}
 }

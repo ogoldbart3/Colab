@@ -2,13 +2,11 @@ package edu.gatech.mas;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
 import edu.gatech.mas.model.Course;
-import edu.gatech.mas.model.Status;
 import edu.gatech.mas.model.Student;
 
 /**
@@ -19,47 +17,21 @@ import edu.gatech.mas.model.Student;
  */
 class ClassListPagerAdapter extends FragmentStatePagerAdapter {
 
-	private List<Course> courseList;
+	/** List of courses displayed on separate pages */
+	private List<Course> mCourseList;
 
-	private Student user;
+	/** Current user of the app */
+	private Student mUser;
 
 	public ClassListPagerAdapter(FragmentManager fm) {
 		super(fm);
-		courseList = new ArrayList<Course>();
-		user = new Student();
-		generateRandomCourses(); // TODO: replace that with courses from
-									// T-Square
-	}
-
-	private void generateRandomCourses() {
-		for (int i = 0; i < 6; i++) {
-			Course c = new Course();
-			c.setName("Course " + i);
-			for (int j = 0; j <= i + 1; j++) {
-				Student s = new Student();
-				s.setStatus(Status.ONLINE);
-				s.setUsername(generateString());
-				c.getStudents().add(s);
-
-			}
-			courseList.add(c);
-		}
-	}
-
-	public static String generateString() {
-		Random random = new Random();
-		String characters = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-		int length = 6;
-		char[] text = new char[length];
-		for (int i = 0; i < length; i++) {
-			text[i] = characters.charAt(random.nextInt(characters.length()));
-		}
-		return new String(text);
+		mCourseList = new ArrayList<Course>();
+		mUser = new Student();
 	}
 
 	@Override
 	public Fragment getItem(int i) {
-		return ClassListFragment.newInstance(courseList.get(i), user);
+		return ClassListFragment.newInstance(mCourseList.get(i), mUser);
 	}
 
 	@Override
@@ -69,28 +41,29 @@ class ClassListPagerAdapter extends FragmentStatePagerAdapter {
 
 	@Override
 	public int getCount() {
-		return courseList.size();
+		return mCourseList.size();
 	}
 
 	@Override
 	public CharSequence getPageTitle(int position) {
-		return courseList.get(position).getName();
+		return mCourseList.get(position).getName();
 	}
 
 	void setCourseListWithStudents(List<Student> students) {
 		Course c = new Course();
 		c.setStudents(students);
-		courseList.set(0, c);
+		mCourseList.set(0, c);
 	}
 
 	void setCourseList(List<Course> courses) {
-		this.courseList = courses;
+		this.mCourseList = courses;
 	}
 
 	public void setUser(Student user) {
-		this.user = user;
+		this.mUser = user;
 	}
 
+	// TODO Pawel: implement update students of a class
 	public void setStudents(List<Student> students) {
 
 	}

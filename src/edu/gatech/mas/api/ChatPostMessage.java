@@ -20,8 +20,15 @@ import org.apache.http.util.EntityUtils;
 import android.os.AsyncTask;
 import edu.gatech.mas.ClassListActivity;
 
+/**
+ * AsyncTask responsible for posting a chat message to db.
+ * 
+ * @author Pawel
+ * 
+ */
 public class ChatPostMessage extends AsyncTask<String, String, String> {
 
+	/** Callback activity */
 	private IChatCallback mCallback;
 
 	public ChatPostMessage(IChatCallback callback) {

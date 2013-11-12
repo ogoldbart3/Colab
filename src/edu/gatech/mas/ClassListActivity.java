@@ -3,7 +3,6 @@ package edu.gatech.mas;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.http.impl.client.DefaultHttpClient;
 import android.annotation.TargetApi;
 import android.app.ActionBar;
 import android.content.Intent;
@@ -24,19 +23,22 @@ import edu.gatech.mas.service.ChatService;
 import edu.gatech.mas.service.GPSLocationService;
 
 /**
- * Class that contains a tab swipe activity with classes of a logged in student.
+ * Class responsible for displaying all classes of the user. Each class contains
+ * list of students that are also taking that class. User can set up his
+ * visibility for each class (visible/invisible), also check-in into a new
+ * location where he studies e.g. library.
  * 
  * @author Pawel
  */
 public class ClassListActivity extends FragmentActivity implements
 		IClassCallback {
 
-	private static String TAG = "ClassListActivity";
 	/**
-	 * This adapter returns a ClassObjectFragment, representing an object in the
-	 * collection/
+	 * Adapter for a ClassObjectFragment, representing a course object in the
+	 * collection.
 	 */
 	private ClassListPagerAdapter mClassListPagerAdapter;
+
 	/**
 	 * View pager for tabs.
 	 */
@@ -44,25 +46,19 @@ public class ClassListActivity extends FragmentActivity implements
 
 	private Button mLocationButton;
 	private Button mStatusButton;
-	private Button mChatButton;
-
-	private DefaultHttpClient mClient;
+	private Button mChatButton; // TODO Pawel: implement group chat
 
 	private static Student mUser;
-
 	private List<Course> mCourses = new ArrayList<Course>();
 
+	/** Session name returned after successful authentication to CAS system */
 	private static String sessionName;
+	/** Session id, essential to make valid calls t API */
 	private static String sessionId;
-	private static boolean alreadyFetched = false;
 
 	@Override
 	protected void onSaveInstanceState(Bundle outState) {
 		super.onSaveInstanceState(outState);
-	}
-
-	public ClassListActivity() {
-		mUser = new Student();
 	}
 
 	@TargetApi(Build.VERSION_CODES.HONEYCOMB)
@@ -78,6 +74,7 @@ public class ClassListActivity extends FragmentActivity implements
 		sessionName = data.getQueryParameter("sessionName");
 		sessionId = data.getQueryParameter("sessionId");
 
+		// initialize pager adapter
 		mClassListPagerAdapter = new ClassListPagerAdapter(
 				getSupportFragmentManager());
 		mViewPager = (ViewPager) findViewById(R.id.pager);
@@ -99,12 +96,11 @@ public class ClassListActivity extends FragmentActivity implements
 
 			@Override
 			public void onClick(View v) {
-				mStatusButton.setText("test");
-				System.out.println(R.string.status_online);
-				if (mStatusButton.getText().equals("Status: offline"))
-					mStatusButton.setText("Status: online");
+				;
+				if (mStatusButton.getText().equals(getResources().getString(R.string.status_offline)))
+					mStatusButton.setText(getResources().getString(R.string.status_online));
 				else
-					mStatusButton.setText("Status: offline");
+					mStatusButton.setText(getResources().getString(R.string.status_offline));
 
 			}
 		});
@@ -127,9 +123,43 @@ public class ClassListActivity extends FragmentActivity implements
 		mClassListPagerAdapter.notifyDataSetChanged();
 
 		/**
-		 * Get username from server and set it as title in action bar
+		 * Get information about current user from server.
 		 */
 		new ClassGetUser(ClassListActivity.this).execute();
+	}
+
+	@Override
+	public void updateCoursesWithStudents(List<Course> result) {
+		mClassListPagerAdapter.setCourseList(mCourses);
+		mClassListPagerAdapter.notifyDataSetChanged();
+	}
+
+	@Override
+	public void setUser(Student user) {
+		mUser = user;
+		setTitle();
+
+		// update fragment with a new data
+		mClassListPagerAdapter.setUser(user);
+		mClassListPagerAdapter.notifyDataSetChanged();
+
+		// after receiving user information, get his classes
+		new ClassGetCourses(ClassListActivity.this).execute(String.valueOf(user
+				.getUid()));
+	}
+
+	@Override
+	public void setCourses(List<Course> courses) {
+		this.mCourses = courses;
+	}
+
+	@TargetApi(Build.VERSION_CODES.HONEYCOMB)
+	void setTitle() {
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB
+				&& mUser != null) {
+			ActionBar actionBar = getActionBar();
+			actionBar.setTitle("Hello " + mUser.getFirstName() + "!");
+		}
 	}
 
 	public static String getSessionName() {
@@ -143,37 +173,4 @@ public class ClassListActivity extends FragmentActivity implements
 	public static Student getCurrentUser() {
 		return mUser;
 	}
-
-
-	@Override
-	public void setStudentsForCourse(List<Course> result) {
-		mClassListPagerAdapter.setCourseList(mCourses);
-		mClassListPagerAdapter.notifyDataSetChanged();
-		alreadyFetched = true;
-	}
-
-	@TargetApi(Build.VERSION_CODES.HONEYCOMB)
-	@Override
-	public void setUserInfo(Student user) {
-		mUser = user;
-		
-		mClassListPagerAdapter.setUser(mUser);
-		
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-			ActionBar actionBar = getActionBar();
-			actionBar.setTitle("Hello " + mUser.getFirstName() + "!");
-		}
-
-		if (alreadyFetched)
-			mClassListPagerAdapter.notifyDataSetChanged();
-		
-		new ClassGetCourses(ClassListActivity.this).execute(String
-				.valueOf(mUser.getUid()));
-	}
-
-	@Override
-	public void setCourses(List<Course> courses) {
-		this.mCourses = courses;
-	}
-
 }

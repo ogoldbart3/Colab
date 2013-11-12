@@ -19,24 +19,33 @@ import android.util.Log;
 import edu.gatech.mas.ClassListActivity;
 import edu.gatech.mas.model.Course;
 
+/**
+ * AsyncTask responsible for getting a list of classes for a current user of the
+ * app.
+ * 
+ * @author Pawel
+ * 
+ */
 public class ClassGetCourses extends AsyncTask<String, Integer, List<Course>> {
 
+	/** Callback activity */
 	private IClassCallback mCallback;
+
+	/** Georgia Tech id of the user of the app */
+	private String mUserId;
 
 	public ClassGetCourses(IClassCallback callback) {
 		mCallback = callback;
 	}
-
-	String uid;
 
 	@Override
 	protected List<Course> doInBackground(String... params) {
 
 		HttpClient mClient = new DefaultHttpClient();
 
-		uid = params[0];
+		mUserId = params[0];
 		String apiCourses = "http://dev.m.gatech.edu/d/pkwiecien3/w/colab/c/api/user/"
-				+ uid + "/course";
+				+ mUserId + "/course";
 
 		List<Course> courses = new ArrayList<Course>();
 		try {
@@ -64,8 +73,6 @@ public class ClassGetCourses extends AsyncTask<String, Integer, List<Course>> {
 			} catch (JSONException e) {
 				e.printStackTrace();
 			}
-			
-			
 
 		} catch (Exception e) {
 			Log.e("log_tag", "Error in http connection: " + e.toString());
@@ -78,7 +85,7 @@ public class ClassGetCourses extends AsyncTask<String, Integer, List<Course>> {
 	protected void onPostExecute(List<Course> result) {
 		ClassGetStudents fs = new ClassGetStudents(mCallback);
 		fs.setCourses(result);
-		fs.execute(String.valueOf(uid));
+		fs.execute(String.valueOf(mUserId));
 		mCallback.setCourses(result);
 	}
 }

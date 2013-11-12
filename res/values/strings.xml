@@ -8,8 +8,8 @@
     <string name="password">Password</string>
     <string name="your_classes">Your classes</string>
     <string name="enable_location">Check-in</string>
-    <string name="status_online">Status: Online</string>
-    <string name="status_offline">Status: Offline</string>
+    <string name="status_online">My Status: Online</string>
+    <string name="status_offline">My Status: Offline</string>
     <string name="group_chat">Group Chat</string>
     <string name="local_service_started">Local service started</string>
     <string name="local_service_stopped">Local service stopped</string>
@@ -23,4 +23,6 @@
     <string name="distance_student">Distance:</string>
     <string name="status_student">Status:</string>
     <string name="name_student">Name:</string>
+    <string name="messages">Messages:</string>
+    <string name="send">Send</string>
 </resources>

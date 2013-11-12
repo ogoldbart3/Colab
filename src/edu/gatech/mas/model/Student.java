@@ -4,22 +4,39 @@ import android.location.Location;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+/**
+ * Model object for a student. Not that it is assumed that an user of the app is
+ * also Student.
+ * 
+ * @author Pawel
+ * 
+ */
 public class Student implements Parcelable {
 
+	/** Georgia Tech id of the student */
 	private int uid;
 
+	/** Georgia Tech username of the student */
 	private String username;
 
+	/** First name of the student */
 	private String firstName;
 
+	/** Last name of the student */
 	private String lastName;
 
+	/** Current {@link Status} of the student */
 	private Status status;
 
+	/** Phone number of the student */
 	private String phone;
 
+	/** Location of the student	 */
 	private Location location;
-	
+
+	/**
+	 * Short information about the user (e.g. which classes he/she has taken).
+	 */
 	private String about;
 
 	public Student() {
@@ -29,7 +46,7 @@ public class Student implements Parcelable {
 		firstName = "";
 		lastName = "";
 		phone = "";
-		status = Status.OFFLINE;
+		status = Status.Offline;
 		about = "";
 	}
 
@@ -40,8 +57,10 @@ public class Student implements Parcelable {
 		firstName = in.readString();
 		lastName = in.readString();
 		status = (Status) in.readParcelable(Status.class.getClassLoader());
+
+		// TODO Pawel: after integrating with Amy's code, exchange these lines
 		location = in.readParcelable(null);
-//		location = Location.CREATOR.createFromParcel(in);
+		// location = Location.CREATOR.createFromParcel(in);
 		phone = in.readString();
 		about = in.readString();
 	}
@@ -132,10 +151,11 @@ public class Student implements Parcelable {
 	public String getAbout() {
 		return about;
 	}
-	
+
 	public void setAbout(String about) {
 		this.about = about;
 	}
+
 	@Override
 	public String toString() {
 		return ("StudentId: " + uid + ", username: " + username + ", name: "

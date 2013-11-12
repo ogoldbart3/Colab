@@ -1,18 +1,5 @@
 package edu.gatech.mas.service;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
-import org.apache.http.HttpResponse;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.message.BasicNameValuePair;
-
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -23,7 +10,6 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.location.LocationProvider;
-import android.os.AsyncTask;
 import android.os.Binder;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -33,20 +19,25 @@ import edu.gatech.mas.ClassListActivity;
 import edu.gatech.mas.R;
 
 /**
- * Service that gets the user location and stores it in the database.
+ * GPSLocationServic is responsible for getting user location and storing it in
+ * the local database.
  * 
  * @author Pawel
  * 
  */
 public class GPSLocationService extends Service {
 
-	private LocationManager locationManager;
-	private LocationListener locationListener;
+	private static String TAG = GPSLocationService.class.getSimpleName();
 
+	private LocationManager mLocationManager;
+	private LocationListener mLocationListener;
+
+	/** default times for getting a new location of the user */
 	private static long refreshTimeMilis = 2000;
 	private static long minDistanceMeters = 20;
 
-	private int lastStatus = 0;
+	/** status of location provider */
+	private int mLastStatus = 0;
 
 	private final IBinder mBinder = new LocalBinder();
 
@@ -68,18 +59,15 @@ public class GPSLocationService extends Service {
 
 		startGPSService();
 
-		// Display a notification about starting a service. An icon will be
-		// displayed in the
-		// status bar.
+		// Display a notification in status bar about starting a service.
 		showNotification();
 
 	}
 
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
-		Log.i("LocalService", "Received start id " + startId + ": " + intent);
-		// continue running service until it is explicitly stopped, so return
-		// sticky.
+		Log.i(TAG, "Received start id " + startId + ": " + intent);
+		// continue running service until it is explicitly stopped (thus sticky)
 		return START_STICKY;
 	}
 
@@ -100,37 +88,36 @@ public class GPSLocationService extends Service {
 
 	private void startGPSService() {
 
-		locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-
-		locationListener = new MyLocationListener();
+		mLocationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+		mLocationListener = new MyLocationListener();
 
 		// exceptions will be thrown if provider is not permitted.
-		boolean gps_enabled = false, network_enabled = false;
-		gps_enabled = locationManager
+		boolean gpsEnabled = false, networkEnabled = false;
+		gpsEnabled = mLocationManager
 				.isProviderEnabled(LocationManager.GPS_PROVIDER);
-		network_enabled = locationManager
+		networkEnabled = mLocationManager
 				.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
 
 		// if no provider is enabled, ask user to enable it in the settings
-		if (!gps_enabled && !network_enabled) {
+		if (!gpsEnabled && !networkEnabled) {
 			Intent gpsOptionsIntent = new Intent(
 					android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS);
 			startActivity(gpsOptionsIntent);
 		}
 
 		// start updating location with a chosen provider
-		locationManager.requestLocationUpdates(
-				gps_enabled ? LocationManager.GPS_PROVIDER
+		mLocationManager.requestLocationUpdates(
+				gpsEnabled ? LocationManager.GPS_PROVIDER
 						: LocationManager.NETWORK_PROVIDER, refreshTimeMilis,
-				minDistanceMeters, locationListener);
+				minDistanceMeters, mLocationListener);
 	}
 
 	private void shutdownLoggerService() {
-		locationManager.removeUpdates(locationListener);
+		mLocationManager.removeUpdates(mLocationListener);
 	}
 
 	/**
-	 * Listener that returns user location.
+	 * Location Listener that returns user location.
 	 * 
 	 * @author Pawel
 	 * 
@@ -154,65 +141,23 @@ public class GPSLocationService extends Service {
 								+ (loc.hasAccuracy() ? loc.getAccuracy() + "m"
 										: "?"), Toast.LENGTH_SHORT).show();
 
-				// TODO: insert into database here, instead of showing it to the
-				// user. Should be something like this: (also see code below in PostToDb)
-
-				// new PostToDb().execute(generateUsername(),
-				// loc.getLongitude(), loc.getLatitude(), loc.getAltitude(),
-				// loc.getAccuracy();)
+				// TODO Amy: insert into database here, instead of showing it to
+				// the
+				// user.
 			}
 		}
 
-		String generateUsername() {
-			final int length = 8;
-			StringBuffer sb = new StringBuffer();
-			for (int x = 0; x < length; x++) {
-				sb.append((char) ((int) (Math.random() % 26) + 97));
-			}
-			return sb.toString();
-		}
-
-		class PostToDb extends AsyncTask<String, Void, Boolean> {
-
-			@Override
-			protected Boolean doInBackground(String... strings) {
-
-				String url = "http://dev.m.gatech.edu/d/pkwiecien3/w/colab/c/api/username/"
-						+ strings[0];
-
-				HttpClient client = new DefaultHttpClient();
-				HttpPost post = new HttpPost(url);
-
-				List<NameValuePair> urlParameters = new ArrayList<NameValuePair>();
-				urlParameters.add(new BasicNameValuePair("longitude",
-						strings[1]));
-				urlParameters
-						.add(new BasicNameValuePair("latitude", strings[2]));
-				urlParameters
-						.add(new BasicNameValuePair("altitude", strings[3]));
-				urlParameters
-						.add(new BasicNameValuePair("accuracy", strings[4]));
-
-				try {
-					post.setEntity(new UrlEncodedFormEntity(urlParameters));
-
-					// Execute HTTP Post Request
-					HttpResponse response = client.execute(post);
-				} catch (ClientProtocolException e) {
-					// TODO Auto-generated catch block
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-				}
-				return true;
-			}
-		}
-
+		/**
+		 * Notify user that location provider is unavailable.
+		 */
 		public void onProviderDisabled(String provider) {
 			Toast.makeText(getBaseContext(), "onProviderDisabled: " + provider,
 					Toast.LENGTH_SHORT).show();
-
 		}
 
+		/**
+		 * Notify user that location provider is available.
+		 */
 		public void onProviderEnabled(String provider) {
 			Toast.makeText(getBaseContext(), "onProviderEnabled: " + provider,
 					Toast.LENGTH_SHORT).show();
@@ -227,11 +172,11 @@ public class GPSLocationService extends Service {
 				showStatus = "Temporarily Unavailable";
 			if (status == LocationProvider.OUT_OF_SERVICE)
 				showStatus = "Out of Service";
-			if (status != lastStatus) {
+			if (status != mLastStatus) {
 				Toast.makeText(getBaseContext(), "new status: " + showStatus,
 						Toast.LENGTH_SHORT).show();
 			}
-			lastStatus = status;
+			mLastStatus = status;
 		}
 	}
 
@@ -254,8 +199,6 @@ public class GPSLocationService extends Service {
 				text, contentIntent);
 
 		// Send the notification.
-		// We use a string id because it is a unique number. We use it later to
-		// cancel.
 		mNotificationManager.notify(R.string.local_service_started,
 				notification);
 	}

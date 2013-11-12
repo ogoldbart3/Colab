@@ -3,8 +3,15 @@ package edu.gatech.mas.model;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-public enum Status implements Parcelable{
-	OFFLINE, ONLINE, AWAY;
+/**
+ * Describes possible status of the student in the colab app. Each student can
+ * be online (currently using Colab), away (has been using Colab recently),
+ * offline (is not using Colab currently).
+ * 
+ * @author Pawel
+ */
+public enum Status implements Parcelable {
+	Offline, Online, Away;
 
 	@Override
 	public int describeContents() {
@@ -25,4 +32,5 @@ public enum Status implements Parcelable{
 			return new Status[size];
 		}
 	};
+
 }

@@ -13,18 +13,12 @@ public class StudentInfoActivity extends Activity {
 
 	public static String USERNAME_TAG = "username";
 	private Button mPrivateChatButton;
-	private Student mStudent;
+	private Student mReceiver;
 	private Student mUser;
 	private TextView nameTextView;
 	private TextView statusTextView;
 	private TextView distanceTextView;
 	private TextView aboutTextView;
-
-
-	public long getItemId(int position) {
-
-		return 0;
-	}
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -32,47 +26,37 @@ public class StudentInfoActivity extends Activity {
 		setContentView(R.layout.activity_student_info);
 
 		Intent intent = getIntent();
-		mStudent = intent.getParcelableExtra("receiver");
 		mUser = intent.getParcelableExtra("user");
+		mReceiver = intent.getParcelableExtra("receiver");
 
 		mPrivateChatButton = (Button) findViewById(R.id.private_chat_button);
-		mPrivateChatButton
-				.setText("Chat with " + mStudent.getFirstName());
+		mPrivateChatButton.setText("Chat with " + mReceiver.getFirstName());
 		mPrivateChatButton.setOnClickListener(new OnClickListener() {
 
 			@Override
 			public void onClick(View v) {
 				Intent i = new Intent(getApplicationContext(),
-						Messaging.class);
-				i.putExtra("receiver", mStudent);
+						ChatActivity.class);
+				i.putExtra("receiver", mReceiver);
 				i.putExtra("user", mUser);
 				startActivity(i);
 			}
 		});
-		
+
 		nameTextView = (TextView) findViewById(R.id.studentNameLabel);
-		nameTextView.setText(mStudent.getFirstName() + " " + mStudent.getLastName());
-		
+		nameTextView.setText(mReceiver.getFirstName() + " "
+				+ mReceiver.getLastName());
+
 		statusTextView = (TextView) findViewById(R.id.studentStatusLabel);
-		switch(mStudent.getStatus())
-		{
-		case ONLINE:
-			statusTextView.setText("Online");
-			break;
-		case AWAY:
-			statusTextView.setText("Away");
-			break;
-		default:
-			statusTextView.setText("Offline");
-			break;
-		}
-		
+		statusTextView.setText(mReceiver.getStatus().toString());
+
 		distanceTextView = (TextView) findViewById(R.id.studentDistanceLabel);
-		if(mStudent.getLocation() != null) // here we should compute the disctance
+		if (mReceiver.getLocation() != null) // here we should compute the
+												// disctance
 			distanceTextView.setText("On Campus");
-		
+
 		aboutTextView = (TextView) findViewById(R.id.studentAboutLabel);
-		aboutTextView.setText(mStudent.getAbout());
+		aboutTextView.setText(mReceiver.getAbout());
 	}
 
 	@Override
