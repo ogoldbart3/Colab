@@ -1,22 +1,5 @@
 package edu.gatech.mas;
 
-import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.List;
-
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.message.BasicNameValuePair;
-import org.apache.http.util.EntityUtils;
-
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -26,7 +9,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.database.Cursor;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.KeyEvent;
 import android.view.View;
@@ -35,12 +17,15 @@ import android.view.View.OnKeyListener;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
+import edu.gatech.mas.api.IChatCallback;
+import edu.gatech.mas.api.ChatMarkMessage;
+import edu.gatech.mas.api.ChatPostMessage;
 import edu.gatech.mas.model.Message;
 import edu.gatech.mas.model.Student;
 import edu.gatech.mas.service.ChatService;
 import edu.gatech.mas.tools.LocalStorageHandler;
 
-public class Messaging extends Activity {
+public class Messaging extends Activity implements IChatCallback {
 
 	private static final int MESSAGE_CANNOT_BE_SENT = 0;
 	public Student mUser = null;
@@ -110,7 +95,9 @@ public class Messaging extends Activity {
 				if (message.length() > 0) {
 					messageText.setText("");
 
-					new PostMessageToDb().execute(message.toString());
+					new ChatPostMessage(Messaging.this).execute(
+							message.toString(), String.valueOf(mUser.getUid()),
+							String.valueOf(mReceiver.getUid()));
 				}
 			}
 		});
@@ -125,89 +112,6 @@ public class Messaging extends Activity {
 			}
 		});
 
-	}
-
-	class MarkAsReadInDb extends AsyncTask<Integer, Integer, Boolean> {
-
-		@Override
-		protected Boolean doInBackground(Integer... params) {
-			int messageId = params[0];
-			HttpClient httpClient = new DefaultHttpClient();
-			String api = "http://dev.m.gatech.edu/d/pkwiecien3/w/colab/c/api/user/4/chat/"
-					+ mReceiver.getUid();
-
-			try {
-				// Add your data
-				URI uri = new URI(api);
-				HttpPost httppost = new HttpPost(uri);
-
-				List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>();
-				nameValuePairs.add(new BasicNameValuePair("messageRead", String
-						.valueOf(messageId)));
-
-				httppost.setHeader("Cookie", ClassListActivity.getSessionName()
-						+ "=" + ClassListActivity.getSessionId());
-				httppost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
-
-				// Execute HTTP Post Request
-				httpClient.execute(httppost);
-			} catch (ClientProtocolException e) {
-				e.printStackTrace();
-			} catch (IOException e) {
-				e.printStackTrace();
-			} catch (URISyntaxException e) {
-				e.printStackTrace();
-			}
-			return true;
-		}
-
-	}
-
-	class PostMessageToDb extends AsyncTask<String, String, String> {
-
-		@Override
-		protected String doInBackground(String... params) {
-
-			String message = params[0];
-			HttpClient httpclient = new DefaultHttpClient();
-			String api = "http://dev.m.gatech.edu/d/pkwiecien3/w/colab/c/api/user/"
-					+ mUser.getUid() + "/chat/" + mReceiver.getUid();
-
-			System.out.println("Sending message:  " + message + ", to: " + api);
-			try {
-				// Add your data
-				URI uri = new URI(api);
-				HttpPost httppost = new HttpPost(uri);
-
-				List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>();
-				nameValuePairs.add(new BasicNameValuePair("message", message
-						.trim()));
-
-				httppost.setHeader("Cookie", ClassListActivity.getSessionName()
-						+ "=" + ClassListActivity.getSessionId());
-				httppost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
-
-				// Execute HTTP Post Request
-				HttpResponse response = httpclient.execute(httppost);
-				HttpEntity entity = response.getEntity();
-				String result = EntityUtils.toString(entity);
-				System.out.println("result of posting to db: " + result);
-			} catch (ClientProtocolException e) {
-				e.printStackTrace();
-			} catch (IOException e) {
-				e.printStackTrace();
-			} catch (URISyntaxException e) {
-				e.printStackTrace();
-			}
-			return message;
-		}
-
-		@Override
-		protected void onPostExecute(String result) {
-			localstoragehandler.insert(mUser.getUsername(),
-					mReceiver.getUsername(), result);
-			appendToMessageHistory(mUser.getFirstName(), result);
-		}
 	}
 
 	@Override
@@ -258,7 +162,8 @@ public class Messaging extends Activity {
 			Message message = extra.getParcelable(Message.MESSAGE_TAG);
 
 			if (message != null && message.isRead() == 0) {
-				new MarkAsReadInDb().execute(message.getMessageId());
+				new ChatMarkMessage().execute(message.getMessageId(),
+						mUser.getUid(), mReceiver.getUid());
 
 				if (mUser.getUid() == message.getSentTo()) {
 
@@ -301,6 +206,12 @@ public class Messaging extends Activity {
 		if (dbCursor != null) {
 			dbCursor.close();
 		}
+	}
+
+	public void displayChatMessage(String result) {
+		localstoragehandler.insert(mUser.getUsername(),
+				mReceiver.getUsername(), result);
+		appendToMessageHistory(mUser.getFirstName(), result);
 	}
 
 }

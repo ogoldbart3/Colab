@@ -125,7 +125,6 @@ public class ClassListFragment extends Fragment {
 			TableRow.LayoutParams tableParams3 = new TableRow.LayoutParams(20,
 					20, 4);
 
-
 			final TextView distance = new TextView(getActivity());
 			distance.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 20);
 			distance.setLayoutParams(tableParams);
@@ -146,13 +145,6 @@ public class ClassListFragment extends Fragment {
 				break;
 			}
 			statusImage.setLayoutParams(tableParams3);
-
-			/*
-			 * final TextView status = new TextView(getActivity());
-			 * status.setText("Status");
-			 * status.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 20);
-			 * status.setLayoutParams(tableParams);
-			 */
 
 			final TextView map = new TextView(getActivity());
 			map.setText("Map");
