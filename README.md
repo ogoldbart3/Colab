@@ -10,6 +10,8 @@ same class as well as where on campus they are located.
 How it works
 =====
 
+Technologies: Apart from developing an Android app, I also working on MySQL database, writing a RESTful API, PHP.
+
 The application first checks whether the current user is a legitimate Georgia Tech (GT) student, by veryfing his GT credentials during login.
 The credentials are verified by the CAS server (central authentication server) from Georgia Tech.
 CAS doesn't have API, it does the authentication only through the browser and issues session id. 
